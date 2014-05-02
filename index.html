@@ -1,0 +1,48 @@
+<!doctype html>
+<html　lang="ja">
+<head>
+<meta charset='utf-8'>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ari</title>
+<link href="bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="ant.css">
+</head>
+<body>
+
+<div class="container" id="container">
+
+<div id="side">
+<div id="health">健康：</div>
+<div id="level">レベル：</div>
+<div id="kill-count">現在の本気：</div>
+<div id="click-count"></div>
+<div id="ant-count"></div>
+</div>
+
+<div id="main">
+<canvas id="myCanvas"></canvas>
+</div>
+
+<div id="control-panel">
+<div id="skill-point">スキルポイント：</div><br/>
+<div class="control-panel-elem">
+<button class="btn" id="eater-upgrade" disabled="true">アリクイ</button>
+</div>
+<div class="control-panel-elem">
+<button class="btn" id="crush-upgrade" disabled="true">通常攻撃</button>
+</div>
+<div class="control-panel-elem">
+<button class="btn" id="special-upgrade" disabled="true">必殺技</button>
+</div>
+</div>
+
+</div>
+
+<script src="bower_components/jquery/dist/jquery.min.js"></script>
+<script src="bower_components/angular/angular.min.js"></script>
+<script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+<script src="ant.js"></script>
+</script>
+</body>
+</html>

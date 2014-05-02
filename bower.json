@@ -1,0 +1,28 @@
+{
+  "name": "ari",
+  "description": "A game",
+  "version": "0.0.1-snapshot",
+  "homepage": "http://example.org/",
+  "license": "Proprietary",
+  "private": true,
+  "dependencies": {
+    "bootstrap": ">=3.1.1",
+    "jquery": ">=2.x.x",
+    "angular": ">=1.2.x",
+    "angular-mocks": ">=1.2.x",
+    "angular-route": ">=1.2.x",
+    "angular-resource": ">=1.2.x",
+    "angular-animate": ">=1.2.x"
+  },
+  "authors": [
+    "pouis <pouis@example.com>",
+    "N.Sukegawa <nsukeg@gmail.com>"
+  ],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

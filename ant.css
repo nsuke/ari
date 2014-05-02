@@ -1,0 +1,53 @@
+body {
+  font-family: ヒラギノ角ゴ Pro W3','Hiragino Kaku Gothic Pro','メイリオ',Meiryo,'ＭＳ Ｐゴシック',sans-serif;
+	margin: 0;
+	background-color: black;
+}
+
+canvas {
+	background-color: white;
+}
+
+#container {
+	background-color: gray;
+	margin-left: auto;
+	margin-right: auto;
+	width: 900px;
+  padding-bottom: 30px;
+}
+
+#side {
+	width: 150px;
+	float: left;
+	border:2px solid;
+	border-radius:15px;
+	padding:10px;
+	margin:10px;
+}
+
+.control-panel-elem {
+	float: top;
+	margin-bottom: 8px;
+}
+
+#control-panel {
+	float: left;
+	width: 170px;
+	border:2px solid;
+	border-radius:15px;
+	padding:10px;
+	margin:10px;
+}
+
+#main {
+	float: left;
+	background-color: white;
+	border:0px solid;
+	border-radius:15px;
+	padding:10px;
+	margin-top:10px;
+}
+
+#gameover {
+	text-align: center;
+}
