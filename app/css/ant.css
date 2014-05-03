@@ -12,17 +12,31 @@ canvas {
 	background-color: gray;
 	margin-left: auto;
 	margin-right: auto;
-	width: 900px;
+	width: 950px;
   padding-bottom: 30px;
 }
 
 #side {
-	width: 150px;
-	float: left;
-	border:2px solid;
-	border-radius:15px;
-	padding:10px;
-	margin:10px;
+  background-color: lightgray;
+  font-size: 1.2em;
+  font-weight: bold;
+  width: 190px;
+  float: left;
+  border:2px solid;
+  border-radius:15px;
+  padding:10px;
+  margin:10px;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+td {
+  padding-left: 35px;
+  text-align: right;
 }
 
 .control-panel-elem {
@@ -31,6 +45,7 @@ canvas {
 }
 
 #control-panel {
+  background-color: lightgray;
 	float: left;
 	width: 170px;
 	border:2px solid;
@@ -45,7 +60,7 @@ canvas {
 	border:0px solid;
 	border-radius:15px;
 	padding:10px;
-	margin-top:10px;
+	margin:10px;
 }
 
 #gameover {

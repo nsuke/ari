@@ -1,0 +1,58 @@
+<!doctype html>
+<html　lang="ja" ng-app="ariApp">
+<head>
+<meta charset='utf-8'>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ari</title>
+<link href="../bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="css/ant.css">
+</head>
+<body>
+
+<div class="container" id="container" ng-controller="AriCtrl" ng-init="init()">
+
+<div id="side">
+  <table>
+    <tbody>
+    <tr><th>健康</th><td>{{user.health}}</td></tr>
+    <tr><th>ターン</th><td>{{stats.turnCount}}</td></tr>
+    <tr><th>レベル</th><td>{{user.level}}</td></tr>
+    <tr><th>残りクリック</th><td>{{user.clicks}}</td></tr>
+    <tr><th>現在の本気度</th><td>{{user.motivation}}</td></tr>
+    <tr><th>アリの数</th><td>{{antCount}}</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div id="main">
+<canvas id="myCanvas"></canvas>
+</div>
+
+<div id="control-panel">
+  <div class="control-panel-elem">
+    <button class="btn btn-primary" id="skill-point" disabled="true">スキルポイント {{user.skillPoint}}</button>
+  </div>
+  <div class="control-panel-elem">
+    <button class="ng-class: skillPointStyle();" id="special-upgrade" ng-disabled="user.skillPoint <= 0">必殺技 {{user.specialUpgrade}}</button>
+  </div>
+  <div class="control-panel-elem">
+    <button class="ng-class: skillPointStyle();" id="eater-upgrade" ng-class="{{}}" ng-disabled="user.skillPoint <= 0">アリクイ {{user.eaterUpgrade}}</button>
+  </div>
+  <div class="control-panel-elem">
+    <button class="ng-class: skillPointStyle();" id="crush-upgrade" ng-disabled="user.skillPoint <= 0">通常攻撃 {{user.crushUpgrade}}</button>
+  </div>
+  <div class="control-panel-elem">
+    <button class="ng-class: skillPointStyle();" id="defense-upgrade" ng-disabled="user.skillPoint <= 0">防御 {{user.defenseUpgrade}}</button>
+  </div>
+</div>
+
+</div>
+
+<script src="../bower_components/jquery/dist/jquery.min.js"></script>
+<script src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+<script src="../bower_components/angular/angular.min.js"></script>
+<script src="js/ant.js"></script>
+</script>
+</body>
+</html>
