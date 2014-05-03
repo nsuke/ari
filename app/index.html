@@ -10,7 +10,7 @@
 </head>
 <body>
 
-<div class="container" id="container" ng-controller="AriCtrl" ng-init="init()">
+<div class="container" id="container" data-ng:controller="AriCtrl" data-ng:init="init()">
 
 <div id="side">
   <table>
@@ -34,16 +34,16 @@
     <button class="btn btn-primary" id="skill-point" disabled="true">スキルポイント {{user.skillPoint}}</button>
   </div>
   <div class="control-panel-elem">
-    <button class="ng-class: skillPointStyle();" id="special-upgrade" ng-disabled="user.skillPoint <= 0">必殺技 {{user.specialUpgrade}}</button>
+    <button class="ng-class: skillPointStyle();" id="special-upgrade" data-ng:disabled="user.skillPoint <= 0">必殺技 {{user.specialUpgrade}}</button>
   </div>
   <div class="control-panel-elem">
-    <button class="ng-class: skillPointStyle();" id="eater-upgrade" ng-class="{{}}" ng-disabled="user.skillPoint <= 0">アリクイ {{user.eaterUpgrade}}</button>
+    <button class="ng-class: skillPointStyle();" id="eater-upgrade" data-ng:class="{{}}" data-ng:disabled="user.skillPoint <= 0">アリクイ {{user.eaterUpgrade}}</button>
   </div>
   <div class="control-panel-elem">
-    <button class="ng-class: skillPointStyle();" id="crush-upgrade" ng-disabled="user.skillPoint <= 0">通常攻撃 {{user.crushUpgrade}}</button>
+    <button class="ng-class: skillPointStyle();" id="crush-upgrade" data-ng:disabled="user.skillPoint <= 0">通常攻撃 {{user.crushUpgrade}}</button>
   </div>
   <div class="control-panel-elem">
-    <button class="ng-class: skillPointStyle();" id="defense-upgrade" ng-disabled="user.skillPoint <= 0">防御 {{user.defenseUpgrade}}</button>
+    <button class="ng-class: skillPointStyle();" id="defense-upgrade" data-ng:disabled="user.skillPoint <= 0">防御 {{user.defenseUpgrade}}</button>
   </div>
 </div>
 
