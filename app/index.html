@@ -10,58 +10,16 @@
 </head>
 <body>
 
-<div class="container" id="container" data-ng:controller="AriCtrl" data-ng:init="init()">
-
-<div id="side">
-  <div class="side-content">
-    <table>
-      <tbody>
-      <tr><th>健康</th><td>{{user.health}}</td></tr>
-      <tr><th>ターン</th><td>{{stats.turnCount}}</td></tr>
-      <tr><th>残りクリック</th><td>{{user.clicks}}</td></tr>
-      <tr><th>アリの数</th><td>{{antCount}}</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="side-content">
-    <table>
-      <tr><th>レベル</th><td>{{user.level}}</td></tr>
-      <tr><th>現在の本気度</th><td>{{user.motivation}}</td></tr>
-      <tr><th>次のレベルまで</th><td>{{user.levelupRate - user.motivation}}</td></tr>
-    </table>
-  </div>
-</div>
-
-<div id="main">
-<canvas id="myCanvas"></canvas>
-</div>
-
-<div id="control-panel">
-  <div class="control-panel-elem">
-    <button class="btn btn-primary" id="skill-point" disabled="true">スキルポイント {{user.skillPoint}}</button>
-  </div>
-  <div class="control-panel-elem">
-    <button class="ng-class: skillPointStyle();" id="special-upgrade" data-ng:disabled="user.skillPoint <= 0">必殺技 {{user.specialKill.value}}</button>
-  </div>
-  <div class="control-panel-elem">
-    <button class="ng-class: skillPointStyle();" id="eater-upgrade" data-ng:class="{{}}" data-ng:disabled="user.skillPoint <= 0">アリクイ {{eaterCount}}</button>
-    <!-- | {{user.eaterEat.value}}</button> -->
-  </div>
-  <div class="control-panel-elem">
-    <button class="ng-class: skillPointStyle();" id="crush-upgrade" data-ng:disabled="user.skillPoint <= 0">通常攻撃 {{user.crushKill.value}}</button>
-    <!--  | {{user.crushRadius.value}}</button> -->
-  </div>
-  <div class="control-panel-elem">
-    <button class="ng-class: skillPointStyle();" id="defense-upgrade" data-ng:disabled="user.skillPoint <= 0">防御 {{user.defense.value}}</button>
-  </div>
-</div>
-
+<div>
+  <div data-ng:view></div>
 </div>
 
 <script src="../bower_components/jquery/dist/jquery.min.js"></script>
 <script src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
-<script src="../bower_components/angular/angular.min.js"></script>
+<script src="../bower_components/angular/angular.js"></script>
+<script src="../bower_components/angular-route/angular-route.js"></script>
 <script src="js/ant.js"></script>
+<script src="js/app.js"></script>
 </script>
 </body>
 </html>

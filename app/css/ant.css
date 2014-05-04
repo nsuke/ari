@@ -8,14 +8,21 @@ canvas {
 	background-color: white;
 }
 
-#container {
+.container {
   border-radius:15px;
 	background-color: gray;
 	margin-top: 3px;
 	margin-left: auto;
 	margin-right: auto;
-	width: 960px;
   padding-bottom: 15px;
+}
+
+#gameover {
+	width: 300;
+}
+
+#game {
+	width: 960px;
 }
 
 #wrapper {
