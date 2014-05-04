@@ -118,7 +118,7 @@ ariApp.controller('AriCtrl', function($scope) {
   };
 
   User.prototype.levelup = function() {
-    var snd = new Audio("se/level.wav");
+    var snd = new Audio("se/level.mp3");
     snd.play();
     this.level++;
     var nextLevel = Math.pow((this.level - 1), 1.1) * 8 + 5;
@@ -379,12 +379,12 @@ ariApp.controller('AriCtrl', function($scope) {
   }
 
   function playDead() {
-    var file = 0.7 < Math.random() ? "se/dead1.wav" : "se/dead2.wav";
+    var file = 0.7 < Math.random() ? "se/dead1.mp3" : "se/dead2.mp3";
     var snd = new Audio(file);
     snd.play();
   }
 
-  var specialSound = new Audio("se/special.wav");
+  var specialSound = new Audio("se/special.mp3");
   function special() {
     stats.specialCount++;
     specialSound.play();
@@ -448,8 +448,8 @@ ariApp.controller('AriCtrl', function($scope) {
     clearInterval(drawLoop);
   }
 
-  var eatSound1 = new Audio("se/perori1.wav");
-  var eatSound2 = new Audio("se/perori2.wav");
+  var eatSound1 = new Audio("se/perori1.mp3");
+  var eatSound2 = new Audio("se/perori2.mp3");
 
   function eat() {
     setTimeout(function() {
