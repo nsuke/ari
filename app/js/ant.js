@@ -2,9 +2,41 @@
 
 var ariApp = angular.module('ariApp', []);
 ariApp.controller('AriCtrl', function($scope) {
-  $scope.stats = stats;
 
-  var muted = false;
+  var Sound = function() {
+    this.repo = {};
+    this.muted = false;
+    this.volume = 1.0;
+  };
+
+  Sound.prototype.updateVolume = function(v) {
+    for (var k in this.repo) {
+      this.repo[k].volume = v;
+    }
+  };
+
+  Sound.prototype.play = function(key) {
+    if(!this.muted) {
+      var snd = this.repo[key];
+      if(snd)
+        snd.play();
+      else
+        console.log(key);
+    }
+  };
+
+  var sound = new Sound();
+  sound.repo = {
+    'level': new Audio("se/level.mp3"),
+    'special': new Audio("se/special.mp3"),
+    'eat1': new Audio("se/perori1.mp3"),
+    'eat2': new Audio("se/perori2.mp3"),
+    'dead1': new Audio("se/dead1.mp3"),
+    'dead2': new Audio("se/dead2.mp3")
+  };
+  sound.updateVolume(0.1);
+
+  $scope.stats = stats;
 
   //console.log(localStorage.getItem("key1"));
 
@@ -114,10 +146,9 @@ ariApp.controller('AriCtrl', function($scope) {
     this.defense = new UserStatus(2, 1000, 8);
   };
 
-  var levelSound = new Audio("se/level.mp3");
   User.prototype.levelup = function() {
     var snd = new Audio("se/level.wav");
-    if(!muted) levelSound.play();
+    sound.play('level');
     var nextLevel = Math.floor(Math.pow(this.level, 1.25) * 8 + 5);
     this.level++;
     this.levelupRate = this.levelupRate + nextLevel;
@@ -259,8 +290,7 @@ ariApp.controller('AriCtrl', function($scope) {
     toBeEaten.sort(function(a, b) { return a - b; });
     var n = toBeEaten.length;
     if(n > 0) {
-      var snd = Math.random() > 0.8 ? eatSound2 : eatSound1;
-      if(!muted) snd.play();
+      sound.play(Math.random() > 0.8 ? 'eat2' : 'eat1');
     }
     while(n > 0 && ants.length > 0) {
       var i = toBeEaten[--n];
@@ -368,12 +398,12 @@ ariApp.controller('AriCtrl', function($scope) {
     }
   });
 
-  function killed(i, sound) {
-    if(sound === null) {
-    } else if(sound) {
-      if(!muted) sound.play();
+  function killed(i, snd) {
+    if(snd === null) {
+    } else if(snd) {
+      sound.play(snd);
     } else {
-      playDead();
+      sound.play(Math.random() > 0.7 ? 'dead1' : 'dead2');
     }
     ants.splice(i, 1);
     $scope.$apply(function() {
@@ -383,16 +413,9 @@ ariApp.controller('AriCtrl', function($scope) {
     });
   }
 
-  function playDead() {
-    var file = 0.7 < Math.random() ? "se/dead1.mp3" : "se/dead2.mp3";
-    var snd = new Audio(file);
-    if(!muted) snd.play();
-  }
-
-  var specialSound = new Audio("se/special.mp3");
   function special() {
     stats.specialCount++;
-    if(!muted) specialSound.play();
+    sound.play('special');
     var n = Math.min(user.specialKill.value, ants.length);
     //console.log("killing by special: " + n);
     var t1 = n > user.specialKill.value > 42 ? 33 : 66;
@@ -452,8 +475,6 @@ ariApp.controller('AriCtrl', function($scope) {
     clearInterval(drawLoop);
   }
 
-  var eatSound1 = new Audio("se/perori1.mp3");
-  var eatSound2 = new Audio("se/perori2.mp3");
 
   function eat() {
     setTimeout(function() {
