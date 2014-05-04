@@ -26,21 +26,26 @@ canvas {
 }
 
 #side {
-  background-color: lightgray;
-  font-size: 1.2em;
-  font-weight: bold;
-  width: 220px;
   float: left;
-  border:0px solid;
-  border-radius:15px;
-  padding:10px;
-  margin:10px;
+  width: auto;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   -khtml-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+}
+
+.side-content {
+  border:0px solid;
+  font-size: 1.2em;
+  font-weight: bold;
+  width: 220px;
+  border-radius:15px;
+  padding:10px;
+  margin:10px;
+  background-color: lightgray;
+  float: top;
 }
 
 td {

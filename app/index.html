@@ -13,17 +13,23 @@
 <div class="container" id="container" data-ng:controller="AriCtrl" data-ng:init="init()">
 
 <div id="side">
-  <table>
-    <tbody>
-    <tr><th>健康</th><td>{{user.health}}</td></tr>
-    <tr><th>ターン</th><td>{{stats.turnCount}}</td></tr>
-    <tr><th>レベル</th><td>{{user.level}}</td></tr>
-    <tr><th>残りクリック</th><td>{{user.clicks}}</td></tr>
-    <tr><th>現在の本気度</th><td>{{user.motivation}}</td></tr>
-    <tr><th>次のレベルまで</th><td>{{user.levelupRate - user.motivation}}</td></tr>
-    <tr><th>アリの数</th><td>{{antCount}}</td></tr>
-    </tbody>
-  </table>
+  <div class="side-content">
+    <table>
+      <tbody>
+      <tr><th>健康</th><td>{{user.health}}</td></tr>
+      <tr><th>ターン</th><td>{{stats.turnCount}}</td></tr>
+      <tr><th>残りクリック</th><td>{{user.clicks}}</td></tr>
+      <tr><th>アリの数</th><td>{{antCount}}</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="side-content">
+    <table>
+      <tr><th>レベル</th><td>{{user.level}}</td></tr>
+      <tr><th>現在の本気度</th><td>{{user.motivation}}</td></tr>
+      <tr><th>次のレベルまで</th><td>{{user.levelupRate - user.motivation}}</td></tr>
+    </table>
+  </div>
 </div>
 
 <div id="main">
