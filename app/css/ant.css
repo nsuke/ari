@@ -9,20 +9,29 @@ canvas {
 }
 
 #container {
+  border-radius:15px;
 	background-color: gray;
+	margin-top: 3px;
 	margin-left: auto;
 	margin-right: auto;
-	width: 950px;
-  padding-bottom: 30px;
+	width: 960px;
+  padding-bottom: 15px;
+}
+
+#wrapper {
+  background: black;
+  width: auto;
+	margin-left: auto;
+	margin-right: auto;
 }
 
 #side {
   background-color: lightgray;
   font-size: 1.2em;
   font-weight: bold;
-  width: 190px;
+  width: 220px;
   float: left;
-  border:2px solid;
+  border:0px solid;
   border-radius:15px;
   padding:10px;
   margin:10px;
@@ -46,12 +55,13 @@ td {
 
 #control-panel {
   background-color: lightgray;
-	float: left;
-	width: 170px;
-	border:2px solid;
+	float: right;
+	width: 160px;
+	border:0px solid;
 	border-radius:15px;
 	padding:10px;
-	margin:10px;
+	margin-right:10px;
+	margin-top:10px;
 }
 
 #main {
@@ -60,7 +70,8 @@ td {
 	border:0px solid;
 	border-radius:15px;
 	padding:10px;
-	margin:10px;
+	margin-left: 10px;
+	margin-top: 10px;
 }
 
 #gameover {

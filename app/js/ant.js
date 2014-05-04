@@ -4,6 +4,8 @@ var ariApp = angular.module('ariApp', []);
 ariApp.controller('AriCtrl', function($scope) {
   $scope.stats = stats;
 
+  var muted = false;
+
   //console.log(localStorage.getItem("key1"));
 
   var antImageReversed = new Image();
@@ -45,12 +47,15 @@ ariApp.controller('AriCtrl', function($scope) {
   $scope.stats = stats;
 
   var eaters = [];
+  $scope.eaterCount = 0;
 
   function summonAnteater() {
     var x = Math.random() * (width - margin*2) + margin;
     var y = Math.random() * (height - margin*2) + margin;
     var r = Math.random() * maxRotate - maxRotate * 0.5;
-    eaters.push(new Anteater(x, y, r));
+    var eater = new Anteater(x, y, r);
+    eaters.push(eater);
+    return eater;
   }
 
   var started = false;
@@ -60,8 +65,8 @@ ariApp.controller('AriCtrl', function($scope) {
   };
 
   Enemy.prototype.nextTurn = function(numTurns) {
-    this.antsPerTurn = Math.floor(Math.max(3 + Math.pow(numTurns, 1.3) * 0.05), this.numTurns * 0.3);
-    console.log("ants per turn: " + this.antsPerTurn);
+    this.antsPerTurn = 3 + Math.floor(Math.max(Math.pow(numTurns, 1.333) * 0.1), this.numTurns * 0.3);
+    //console.log("ants per turn: " + this.antsPerTurn);
   };
 
   var enemy = new Enemy();
@@ -88,42 +93,35 @@ ariApp.controller('AriCtrl', function($scope) {
     this.levelupRate = 5;
     this.level = 1;
 
-
     this.skillPoint = 0;
 
     this.specialUpgrade = 0;
     this.specialRate = new UserStatus(0.0, 1.0, 0.008, true);
-    this.specialKill = new UserStatus(14, 1000, 1.5);
+    this.specialKill = new UserStatus(6, 1000, 2);
 
     this.eaterUpgrade = 0;
-    this.eaterMove = new UserStatus(9, 50, 1);
-    this.eaterRadius = new UserStatus(30, 60, 1.5);
-    this.eaterEat = new UserStatus(1, 3, 0.05);
+    this.eaterMove = new UserStatus(10, 60, 2);
+    this.eaterRadius = new UserStatus(80, 90, 1);
+    this.eaterRate = new UserStatus(0.5, 1.0, 0.005, true);
+    this.eaterEat = new UserStatus(3, 9, 0.2);
+    this.eaterCost = 3;
 
     this.crushUpgrade = 0;
-    this.crushRadius = new UserStatus(9, 48, 3);
-    this.crushKill = new UserStatus(0.5, 1000, 0.5);
+    this.crushRadius = new UserStatus(7, 80, 2.5, true);
+    this.crushKill = new UserStatus(0, 1000, 1);
 
     this.defenseUpgrade = 0;
-    this.defense = new UserStatus(0, 1000, 16);
+    this.defense = new UserStatus(2, 1000, 8);
   };
 
-  User.prototype.clicked = function() {
-    if(this.clicks > 0) {
-      this.clicks--;
-      return true;
-    } else {
-      return false;
-    }
-  };
-
+  var levelSound = new Audio("se/level.mp3");
   User.prototype.levelup = function() {
-    var snd = new Audio("se/level.mp3");
-    snd.play();
+    var snd = new Audio("se/level.wav");
+    if(!muted) levelSound.play();
+    var nextLevel = Math.floor(Math.pow(this.level, 1.25) * 8 + 5);
     this.level++;
-    var nextLevel = Math.pow((this.level - 1), 1.1) * 8 + 5;
-    console.log("next level: " + nextLevel);
     this.levelupRate = this.levelupRate + nextLevel;
+    //this.skillPoint += Math.floor(this.level * 0.2) + 1;
     this.skillPoint += 2;
     //updateStats();
   };
@@ -164,7 +162,7 @@ ariApp.controller('AriCtrl', function($scope) {
   User.prototype.nextTurn = function(turnCount) {
     var dmg = ants.length - this.defense.value;
     if(dmg > 0)
-      this.health -= ants.length;
+      this.health -= dmg;
     if(this.health <= 0) {
       this.health = 0;
       gameover();
@@ -220,18 +218,15 @@ ariApp.controller('AriCtrl', function($scope) {
   var Anteater = function(x, y, rotate) {
     Drawable.call(this, x, y, rotate);
     this.image = anteaterImage2;
-    this.imageWidth = 30;
-    this.imageHeight = 30;
+    this.imageWidth = 40;
+    this.imageHeight = 40;
     //  this.eatRadius = 60;
   };
   Anteater.prototype = Object.create(Drawable.prototype);
 
   Anteater.prototype.drawRadius = function(context) {
     var center = this.centerCoords();
-    var left = center.x - user.eaterRadius.value;
-    var top = center.y - user.eaterRadius.value;
-    context.fillStyle = "#DDE";
-    context.fillRect(left, top, user.eaterRadius.value * 2, user.eaterRadius.value * 2);
+    drawCircle(context, center.x, center.y, user.eaterRadius.value);
   };
 
   Anteater.prototype.swapImage = function() {
@@ -240,14 +235,15 @@ ariApp.controller('AriCtrl', function($scope) {
 
   function allAntsWithin(centerX, centerY, radius, max) {
     var ret = [];
+    var r2 = Math.pow(radius, 2);
     $.each(ants, function(i, e) {
       var ant = this.centerCoords();
-      var dx = Math.abs(centerX - ant.x);
-      var dy = Math.abs(centerY - ant.y);
-      if(dx <= radius && dy <= radius) {
+      var x2 = Math.pow(centerX - ant.x, 2);
+      var y2 = Math.pow(centerY - ant.y, 2);
+      if(x2 + y2 <= r2) {
         ret.push(i);
         if(max && ret.length >= max) {
-          console.log("eat max: " + max);
+          //console.log("eat max: " + max);
           return ret;
         }
       }
@@ -257,19 +253,18 @@ ariApp.controller('AriCtrl', function($scope) {
 
   Anteater.prototype.eat = function() {
     var eater = this.centerCoords();
+    this.drawRadius(canvas.getContext('2d'));
     var radius = user.eaterRadius.value;
     var toBeEaten = allAntsWithin(eater.x, eater.y, user.eaterRadius.value, user.eaterEat.value);
-    toBeEaten.sort();
+    toBeEaten.sort(function(a, b) { return a - b; });
     var n = toBeEaten.length;
-    //var context = canvas.getContext("2d");
     if(n > 0) {
       var snd = Math.random() > 0.8 ? eatSound2 : eatSound1;
-      snd.play();
+      if(!muted) snd.play();
     }
     while(n > 0 && ants.length > 0) {
       var i = toBeEaten[--n];
-      //ants[i].erase(context);
-      if(Math.random() < 0.9) {
+      if(Math.random() < user.eaterRate.value) {
         killed(i, null);
         stats.eatCount++;
       }
@@ -277,11 +272,6 @@ ariApp.controller('AriCtrl', function($scope) {
   };
 
   function updateStats() {
-    //  $("#health").text("健康: "+user.health);
-    //  $("#click-count").text("あと "+user.clicks+"クリック！");
-    //  $("#kill-count").text("現在の本気："+user.motivation+"");
-    //  $("#skill-point").text("スキルポイント："+user.skillPoint+"");
-    //  $("#level").text("レベル："+user.level+"");
     $scope.$digest();
   }
 
@@ -296,8 +286,6 @@ ariApp.controller('AriCtrl', function($scope) {
   var ants = [];
   $scope.antCount = 0;
   function updateAntCount() {
-    //$("#ant-count").text("今のアリの数：　"+ants.length);
-    //$scope.$digest();
     $scope.$apply(function() {
       $scope.antCount = ants.length;
     });
@@ -324,49 +312,66 @@ ariApp.controller('AriCtrl', function($scope) {
     }
   }
 
+  function drawCircle(context, x, y, r) {
+    context.beginPath();
+    context.arc(x, y, r, 0, 2 * Math.PI, false);
+    context.fillStyle = "rgba(255, 232, 240, 0.3)";
+    context.fill();
+  }
+
   $("#myCanvas").click(function(e) {
     stats.clickCount++;
     if(!started) {
       start();
     }
-    if(!user.clicked()) {
-      return;
-    }
+    if(user.clicks <= 0) return;
+    var isLast = user.clicks == 1;
+    $scope.$apply(function() {
+      --user.clicks;
+    });
+
     var x = e.pageX - this.offsetLeft;
     var y = e.pageY - this.offsetTop;
+    var r = user.crushRadius.value;
 
-    var killing = allAntsWithin(x, y, user.crushRadius.value);
-    killing.sort();
-    var n = Math.min(killing.length, user.crushKill.value);
+    var context = canvas.getContext("2d");
+    drawCircle(context, x, y, r);
+    var killing = allAntsWithin(x, y, r);
+    killing.sort(function(a, b) { return a - b; });
+    var n = Math.min(killing.length, Math.max(1, user.crushKill.value));
     if(n > 0) {
-      var context = canvas.getContext("2d");
-      while(n > 0) {
-        stats.crushCount++;
+      while(n > 0 && ants.length > 0) {
         var i = killing[--n];
         var ant = ants[i];
         if(ant) {
           ant.erase(context);
+        } else {
+          console.log(killing);
+          console.log("len: "+ants.length);
+          console.log("n: "+n);
+          console.log("i: "+i);
         }
         killed(i);
+        stats.crushCount++;
       }
       if(Math.random() < user.specialRate.value) {
         special();
       }
-      //drawObjects();
     } else {
       stats.missCount++;
     }
 
-    if(user.clicks === 0) {
+    if(isLast) {
       nextTurn();
+    } else {
+      //updateStats();
     }
-    updateStats();
   });
 
   function killed(i, sound) {
     if(sound === null) {
     } else if(sound) {
-      sound.play();
+      if(!muted) sound.play();
     } else {
       playDead();
     }
@@ -381,15 +386,15 @@ ariApp.controller('AriCtrl', function($scope) {
   function playDead() {
     var file = 0.7 < Math.random() ? "se/dead1.mp3" : "se/dead2.mp3";
     var snd = new Audio(file);
-    snd.play();
+    if(!muted) snd.play();
   }
 
   var specialSound = new Audio("se/special.mp3");
   function special() {
     stats.specialCount++;
-    specialSound.play();
+    if(!muted) specialSound.play();
     var n = Math.min(user.specialKill.value, ants.length);
-    console.log("killing by special: " + n);
+    //console.log("killing by special: " + n);
     var t1 = n > user.specialKill.value > 42 ? 33 : 66;
     var t2 = Math.max(t1, 2400 - t1 * n);
     n = user.specialKill.value;
@@ -419,9 +424,9 @@ ariApp.controller('AriCtrl', function($scope) {
     }
     clearCanvas(canvas);
     var context = canvas.getContext("2d");
-    $.each(eaters, function() {
-      this.drawRadius(context);
-    });
+//    $.each(eaters, function() {
+//      this.drawRadius(context);
+//    });
     $.each(eaters, function() {
       this.draw(context);
     });
@@ -439,7 +444,6 @@ ariApp.controller('AriCtrl', function($scope) {
   var antIncoming = false;
   var drawLoop;
   function start() {
-
     antIncoming = true;
   }
 
@@ -469,7 +473,6 @@ ariApp.controller('AriCtrl', function($scope) {
       this.draw(context);
     });
     updateAntCount();
-    //drawObjects();
     setTimeout(function() {
       eat();
     }, 1);
@@ -491,25 +494,10 @@ ariApp.controller('AriCtrl', function($scope) {
 
   var frame = 0;
   $scope.init = function() {
-    //this.specialUpgrade = 1;
-    //this.specialRate = new UserStatus(0.0, 1.0, 0.01, true);
-    //this.specialKill = new UserStatus(18, 1000, 2);
-
-    //this.eaterUpgrade = 1;
-    //this.eaterMove = new UserStatus(8, 48, 1);
-    //this.eaterRadius = new UserStatus(50, 100, 1.5);
-    //this.eaterEat = new UserStatus(1, 3, 0.05);
-
-    //this.crushUpgrade = 1;
-    //this.crushRadius = new UserStatus(9, 50, 3);
-    //this.crushKill = new UserStatus(0.5, 16, 0.5);
-
-    //this.defenseUpgrade = 1;
-    //this.defense = new UserStatus(0, 1000, 16);
-    user.specialUpgrade = 3;
-    user.eaterUpgrade = 3;
-    user.crushUpgrade = 2;
-    user.defenseUpgrade = 2;
+    user.specialUpgrade = 2;
+    user.eaterUpgrade = 2;
+    user.crushUpgrade = 1;
+    user.defenseUpgrade = 1;
     user.specialRate.update(user.specialUpgrade);
     user.specialKill.update(user.specialUpgrade);
     user.eaterMove.update(user.eaterUpgrade);
@@ -521,13 +509,14 @@ ariApp.controller('AriCtrl', function($scope) {
     addAnts(5);
     $scope.antCount = ants.length;
     summonAnteater();
-    //summonAnteater();
+    $scope.eaterCount = eaters.length;
     drawLoop = setInterval(function() {
       var shouldEaterMove = ++frame % 6 === 0;
       var shouldEaterFlip = frame % 2 === 0;
       var shouldAddAnt = antIncoming && (frame % 8 === 0);
       if(shouldAddAnt) {
         addAnt();
+        updateAntCount();
       }
       $.each(eaters, function() {
         if(shouldEaterFlip) this.swapImage();
@@ -544,26 +533,28 @@ ariApp.controller('AriCtrl', function($scope) {
     $scope.$apply(function() {
       user.skillPoint--;
       user.defenseUpgrade++;
+      var lvl = user.defenseUpgrade;
+      user.defense.update(lvl);
     });
-    var lvl = user.defenseUpgrade;
-    user.defense.update(lvl);
   });
 
   $("#eater-upgrade").click(function() {
+    var m = user.eaterUpgrade % user.eaterCost;
+    var newEater = m == 2;
     $scope.$apply(function() {
       user.skillPoint--;
       user.eaterUpgrade++;
-    });
-    var m = user.eaterUpgrade % 3;
-    if(m == 1) {
-      summonAnteater();
-      drawObjects();
-    } else {
+      if(newEater) {
+        $scope.eaterCount++;
+      }
       var lvl = user.eaterUpgrade;
       user.eaterMove.update(lvl);
       user.eaterRadius.update(lvl);
       user.eaterEat.update(lvl);
-      console.log("eater eat: " + user.eaterEat.value);
+      user.eaterRate.update(lvl);
+    });
+    if(newEater) {
+      summonAnteater().draw(canvas.getContext('2d'));
     }
   });
 
@@ -571,24 +562,24 @@ ariApp.controller('AriCtrl', function($scope) {
     $scope.$apply(function() {
       user.skillPoint--;
       user.crushUpgrade++;
+      var lvl = user.crushUpgrade;
+      user.crushRadius.update(lvl);
+      user.crushKill.update(lvl);
     });
-    var lvl = user.crushUpgrade;
-    user.crushRadius.update(lvl);
-    user.crushKill.update(lvl);
   });
 
   $("#special-upgrade").click(function() {
     $scope.$apply(function() {
       user.skillPoint--;
       user.specialUpgrade++;
-    });
-    var m = user.specialUpgrade % 2;
-    var lvl = user.specialUpgrade;
-    if(m === 0) {
+      //var m = user.specialUpgrade % 2;
+      var lvl = user.specialUpgrade;
+      //  if(m === 0) {
       user.specialRate.update(lvl);
-    } else {
+      // } else {
       user.specialKill.update(lvl);
-    }
+      //}
+    });
   });
 });
 

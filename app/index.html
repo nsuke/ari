@@ -20,6 +20,7 @@
     <tr><th>レベル</th><td>{{user.level}}</td></tr>
     <tr><th>残りクリック</th><td>{{user.clicks}}</td></tr>
     <tr><th>現在の本気度</th><td>{{user.motivation}}</td></tr>
+    <tr><th>次のレベルまで</th><td>{{user.levelupRate - user.motivation}}</td></tr>
     <tr><th>アリの数</th><td>{{antCount}}</td></tr>
     </tbody>
   </table>
@@ -34,16 +35,18 @@
     <button class="btn btn-primary" id="skill-point" disabled="true">スキルポイント {{user.skillPoint}}</button>
   </div>
   <div class="control-panel-elem">
-    <button class="ng-class: skillPointStyle();" id="special-upgrade" data-ng:disabled="user.skillPoint <= 0">必殺技 {{user.specialUpgrade}}</button>
+    <button class="ng-class: skillPointStyle();" id="special-upgrade" data-ng:disabled="user.skillPoint <= 0">必殺技 {{user.specialKill.value}}</button>
   </div>
   <div class="control-panel-elem">
-    <button class="ng-class: skillPointStyle();" id="eater-upgrade" data-ng:class="{{}}" data-ng:disabled="user.skillPoint <= 0">アリクイ {{user.eaterUpgrade}}</button>
+    <button class="ng-class: skillPointStyle();" id="eater-upgrade" data-ng:class="{{}}" data-ng:disabled="user.skillPoint <= 0">アリクイ {{eaterCount}}</button>
+    <!-- | {{user.eaterEat.value}}</button> -->
   </div>
   <div class="control-panel-elem">
-    <button class="ng-class: skillPointStyle();" id="crush-upgrade" data-ng:disabled="user.skillPoint <= 0">通常攻撃 {{user.crushUpgrade}}</button>
+    <button class="ng-class: skillPointStyle();" id="crush-upgrade" data-ng:disabled="user.skillPoint <= 0">通常攻撃 {{user.crushKill.value}}</button>
+    <!--  | {{user.crushRadius.value}}</button> -->
   </div>
   <div class="control-panel-elem">
-    <button class="ng-class: skillPointStyle();" id="defense-upgrade" data-ng:disabled="user.skillPoint <= 0">防御 {{user.defenseUpgrade}}</button>
+    <button class="ng-class: skillPointStyle();" id="defense-upgrade" data-ng:disabled="user.skillPoint <= 0">防御 {{user.defense.value}}</button>
   </div>
 </div>
 
