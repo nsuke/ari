@@ -8,6 +8,7 @@
   "engines": {
     "node": 0.10.x
   },
+  "main": "app/web.js",
   "dependencies": {
     "bower": "^1.3",
   },
