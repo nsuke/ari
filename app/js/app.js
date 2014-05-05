@@ -2,6 +2,7 @@
 
 var ariApp = angular.module('ariApp', [
     'ngRoute',
+    'ariSrvs',
     'ariCtrls',
 ]);
 
