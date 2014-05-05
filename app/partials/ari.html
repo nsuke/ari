@@ -26,21 +26,24 @@
 
 <div id="control-panel">
   <div class="control-panel-elem">
-    <button class="btn btn-primary" disabled="true">スキルポイント {{user.skillPoint}}</button>
+    <button class="skill btn btn-primary" disabled="true">スキルポイント <span class="badge">{{user.skillPoint}}</span></button>
   </div>
   <div class="control-panel-elem">
-    <button class="ng-class: skillPointStyle();" data-ng:click="specialUpgrade();" data-ng:disabled="user.skillPoint <= 0">必殺技 {{user.specialKill.value}}</button>
+    <button class="skill ng-class: skillPointStyle();" data-ng:click="eaterUpgrade();" data-ng:class="{{}}" data-ng:disabled="user.skillPoint <= 0">アリクイ {{eaterCount}} 匹 <span class="badge">{{user.eaterUpgrade}}</span></button>
   </div>
   <div class="control-panel-elem">
-    <button class="ng-class: skillPointStyle();" data-ng:click="eaterUpgrade();" data-ng:class="{{}}" data-ng:disabled="user.skillPoint <= 0">アリクイ {{eaterCount}}</button>
-    <!-- | {{user.eaterEat.value}}</button> -->
+    <button class="skill ng-class: skillPointStyle();" data-ng:click="specialUpgrade();" data-ng:disabled="user.skillPoint <= 0">必殺技 {{user.specialRate.value * 100 | number:1}} %<span class="badge">{{user.specialUpgrade}}</span></button>
   </div>
   <div class="control-panel-elem">
-    <button class="ng-class: skillPointStyle();" data-ng:click="crushUpgrade();" data-ng:disabled="user.skillPoint <= 0">通常攻撃 {{user.crushKill.value}}</button>
-    <!--  | {{user.crushRadius.value}}</button> -->
+    <button class="skill ng-class: skillPointStyle();" data-ng:click="crushUpgrade();" data-ng:disabled="user.skillPoint <= 0">通常攻撃 {{user.crushKill.value}} 匹 <span class="badge">{{user.crushUpgrade}}</span></button>
   </div>
   <div class="control-panel-elem">
-    <button class="ng-class: skillPointStyle();" data-ng:click="defenseUpgrade();" data-ng:disabled="user.skillPoint <= 0">防御 {{user.defense.value}}</button>
+    <button class="skill ng-class: skillPointStyle();" data-ng:click="defenseUpgrade();" data-ng:disabled="user.skillPoint <= 0">防御 {{user.defense.value}}<span class="badge">{{user.defenseUpgrade}}</span></button>
+  </div>
+  <div id="volume">
+    <button type="button" class="btn btn-default" data-ng:click="volumeToggle();">
+      <span class="ng-class: volumeStyle();"></span>
+    </button>
   </div>
 </div>
 

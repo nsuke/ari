@@ -8,7 +8,6 @@ var ariCtrl = function($scope, $log, $interval, $timeout, $location, appData, so
   $scope.user = user;
 
   sound.load();
-  sound.updateVolume(0.5);
 
   var antImageReversed = new Image();
   antImageReversed.src = "img/ant_r.png";
@@ -401,11 +400,14 @@ var ariCtrl = function($scope, $log, $interval, $timeout, $location, appData, so
   };
 
   $scope.eaterUpgrade = function() {
-    var m = user.eaterUpgrade % user.eaterCost;
-    var newEater = m == 1;
+    //var m = user.eaterUpgrade % user.eaterCost;
+    //var newEater = m == 1;
+    var newEater = user.eaterCost === ++user.eaterCostEarned;
     user.skillPoint--;
     user.eaterUpgrade++;
     if(newEater) {
+      user.eaterCostEarned = 0;
+      ++user.eaterCost;
       $scope.eaterCount++;
     }
     var lvl = user.eaterUpgrade;
@@ -432,6 +434,14 @@ var ariCtrl = function($scope, $log, $interval, $timeout, $location, appData, so
     var lvl = user.specialUpgrade;
     user.specialRate.update(lvl);
     user.specialKill.update(lvl);
+  };
+
+  $scope.volumeToggle = function() {
+    sound.volumeToggle();
+  };
+
+  $scope.volumeStyle = function() {
+    return sound.getSoundIconClass();
   };
 };
 
@@ -483,19 +493,20 @@ app.service('appData', ['sound', function(sound) {
     this.eaterRadius = new UserStatus(60, 80, 1);
     this.eaterRate = new UserStatus(0.4, 1.0, 0.005, true);
     this.eaterEat = new UserStatus(3, 9, 0.2);
-    this.eaterCost = 4;
+    this.eaterCost = 1;
+    this.eaterCostEarned = this.eaterCost - 1;
 
     this.crushUpgrade = 0;
     this.crushRadius = new UserStatus(10, 80, 2.5, true);
-    this.crushKill = new UserStatus(1.2, 1000, 0.4);
+    this.crushKill = new UserStatus(1.0, 1000, 0.4);
 
     this.defenseUpgrade = 0;
-    this.defense = new UserStatus(2, 1000, 8);
+    this.defense = new UserStatus(10, 1000, 10);
   };
 
   User.prototype.levelup = function() {
     sound.play('level');
-    var nextLevel = Math.floor(Math.pow(this.level, 1.25) * 8 + 5);
+    var nextLevel = Math.floor(Math.pow(this.level, 1.2) * 8 + 5);
     this.level++;
     this.levelupRate = this.levelupRate + nextLevel;
     this.skillPoint += 2;
@@ -524,10 +535,71 @@ app.service('appData', ['sound', function(sound) {
   this.getUser = function() { return user; };
 }]);
 
-app.service('sound', ['$log', function($log) {
-  var repo = {};
+app.service('sound', ['$log', function($log) { var repo = {};
   var muted = false;
   var volume = 1.0;
+
+  this.updateVolume = function(v) {
+    for (var k in repo) {
+      for(var k2 in repo[k]) {
+        repo[k][k2].volume = v;
+      }
+    }
+  };
+
+  this.play = function(key) {
+    if(!muted) {
+      var snds = repo[key];
+      if(snds) {
+        var n = snds.length;
+        while(--n >= 0) {
+          var snd = snds[n];
+          if(snd.ended || snd.currentTime === 0) {
+            snd.play();
+            return;
+          }
+        }
+        $log.log("not enough: "+key);
+      }
+    }
+  };
+
+  var parent = this;
+  var SoundState = function(icon, volume, muted) {
+    this.iconClass = 'glyphicon glyphicon-volume-' + icon;
+    this.volume = volume;
+    this.muted = typeof muted == 'undefined' ? false : muted;
+    var next;
+    this.nextState = function(s) {
+      if(typeof s == 'undefined') {
+        return next;
+      } else {
+        next = s;
+        return next;
+      }
+    };
+    this.apply = function() {
+      muted = this.muted;
+      parent.updateVolume(this.volume);
+    };
+  };
+  var stateDown = new SoundState('down', 0.3);
+  var stateUp = new SoundState('up', 1.0);
+  var stateOff = new SoundState('off', 0, true);
+  stateDown.nextState(stateUp);
+  stateUp.nextState(stateOff);
+  stateOff.nextState(stateDown);
+
+  var soundState = stateDown;
+
+  this.volumeToggle = function() {
+    soundState = soundState.nextState();
+    soundState.apply();
+  };
+
+  this.getSoundIconClass = function() {
+    return soundState.iconClass;
+  };
 
   this.load = function() {
     var m = {
@@ -547,29 +619,7 @@ app.service('sound', ['$log', function($log) {
       }
       repo[k] = acc;
     }
-  };
-
-  this.updateVolume = function(v) {
-    for (var k in repo) {
-      repo[k].volume = v;
-    }
-  };
-
-  this.play = function(key) {
-    if(!muted) {
-      var snds = repo[key];
-      if(snds) {
-        var n = snds.length;
-        while(--n >= 0) {
-          var snd = snds[n];
-          if(snd.ended || snd.currentTime === 0) {
-            snd.play();
-            return;
-          }
-        }
-        $log.log("not enough: "+key);
-      }
-    }
+    soundState.apply();
   };
 }]);
 

@@ -23,6 +23,16 @@ canvas {
   padding-bottom: 15px;
 }
 
+button.skill {
+  font-weight: bold;
+  width: 160px;
+  text-align: left;
+}
+
+span.badge {
+  float: right;
+}
+
 #gameover {
 	width: 300;
 }
@@ -65,15 +75,21 @@ td {
 	margin-bottom: 8px;
 }
 
+#volume {
+  margin-top: 28px;
+}
+
 #control-panel {
-  background-color: lightgray;
 	float: right;
+	margin-top:10px;
+  /*
+  background-color: lightgray;
 	width: 160px;
 	border:0px solid;
 	border-radius:15px;
 	padding:10px;
 	margin-right:10px;
-	margin-top:10px;
+  */
 }
 
 #main {
