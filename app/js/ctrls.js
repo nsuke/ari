@@ -36,11 +36,9 @@ app.controller('AriCtrl', [
 
   $scope.eaterCount = 0;
 
-
   $scope.skillPointStyle = function() {
     return user.skillPoint > 0 ? "btn btn-danger" : "btn btn-primary";
   };
-
 
   var ants = game.ants();
   $scope.ants = ants;

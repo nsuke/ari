@@ -19,19 +19,6 @@ app.service('render', ['Image', 'canvas', function(Image, canvas) {
   var height = 480;
   var margin = 50;
 
-  this.clickedCoords = function(e) {
-    var x = e.offsetX;
-    var y = e.offsetY;
-    if(typeof x == 'undefined') {
-      x = e.pageX - canvas.offsetLeft;
-      y = e.pageY - canvas.offsetTop;
-    }
-    return {
-      x: x,
-      y: y
-    };
-  };
-
   this.truncateCoords = function(obj) {
     var left = obj.x;
     var right = obj.x + obj.imageWidth;
@@ -47,6 +34,38 @@ app.service('render', ['Image', 'canvas', function(Image, canvas) {
     return {
       x: Math.random() * (width - margin*2) + margin,
       y: Math.random() * (height - margin*2) + margin,
+    };
+  };
+
+  var imageFiles = {
+    'ant': 'img/ant.png',
+    'antReversed': 'img/ant_r.png',
+    'eater1': 'img/arikui1.png',
+    'eater2': 'img/arikui2.png',
+  };
+  var images = {};
+  this.load = function() {
+    angular.forEach(imageFiles, function(v, k) {
+      var img = new Image();
+      img.src = v;
+      images[k] = img;
+      // TODO: onImageLoaded
+    });
+  };
+  this.image = function(k) {
+    return images[k];
+  };
+
+  this.clickedCoords = function(e) {
+    var x = e.offsetX;
+    var y = e.offsetY;
+    if(typeof x == 'undefined') {
+      x = e.pageX - canvas.offsetLeft;
+      y = e.pageY - canvas.offsetTop;
+    }
+    return {
+      x: x,
+      y: y
     };
   };
 
@@ -79,26 +98,6 @@ app.service('render', ['Image', 'canvas', function(Image, canvas) {
     angular.forEach(ants, function(e) {
       e.draw();
     });
-  };
-
-  var imageFiles = {
-    'ant': 'img/ant.png',
-    'antReversed': 'img/ant_r.png',
-    'eater1': 'img/arikui1.png',
-    'eater2': 'img/arikui2.png',
-  };
-
-  var images = {};
-  this.load = function() {
-    angular.forEach(imageFiles, function(v, k) {
-      var img = new Image();
-      img.src = v;
-      images[k] = img;
-      // TODO: onImageLoaded
-    });
-  };
-  this.image = function(k) {
-    return images[k];
   };
 }]);
 
@@ -439,9 +438,9 @@ app.service('game', [
     angular.forEach(added, function(e) {
       e.draw();
     });
-    $timeout(function() {
+    //$timeout(function() {
       eats();
-    }, 1);
+    //}, 1);
   }
 }]);
 
