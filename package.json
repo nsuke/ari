@@ -25,6 +25,7 @@
     "karma-firefox-launcher": "^0.1",
     "karma-jasmine": "^0.2",
     "protractor": "^0.22",
+    "jshint": "^2.5",
     "shelljs": "^0.2"
   },
   "scripts": {
@@ -34,6 +35,7 @@
     "pretest": "npm install",
     "test": "node_modules/karma/bin/karma start test/karma.conf.js",
     "test-single-run": "node_modules/karma/bin/karma start test/karma.conf.js --single-run",
+    "jshint": "node_modules/jshint/bin/jshint app/js/*.js",
     "preupdate-webdriver": "npm install",
     "update-webdriver": "webdriver-manager update",
     "preprotractor": "npm run update-webdriver",
