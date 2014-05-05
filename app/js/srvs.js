@@ -275,7 +275,7 @@ app.service('game', [
     user.crushKill.update(user.crushUpgrade);
     user.defense.update(user.defenseUpgrade);
     addAnts(5);
-    parent.summonAnteater().draw();
+    //parent.summonAnteater().draw();
     drawLoop = $interval(function() {
       var shouldEaterMove = ++frame % 6 === 0;
       var shouldEaterFlip = frame % 2 === 0;
