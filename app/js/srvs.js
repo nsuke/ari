@@ -100,9 +100,7 @@ app.service('render', ['Image', 'canvas', function(Image, canvas) {
     }
     parent.clearCanvas(canvas);
     var context = canvas.getContext("2d");
-    angular.forEach(eaters, function(e) {
-      e.draw();
-    });
+    eaters.draw();
     ants.draw();
   };
 }]);
@@ -295,33 +293,10 @@ app.service('ants', ['Ant', 'render', 'sound',
   };
 }]);
 
-app.service('game', [
-    '$interval',
-    '$timeout',
-    '$location',
-    'sound',
-    'render',
-    'User',
-    'Ant',
-    'Anteater',
-    'ants',
-    function(
-      $interval,
-      $timeout,
-      $location,
-      sound,
-      render,
-      User,
-      Ant,
-      Anteater,
-      ants) {
-
+app.service('eaters', ['Anteater', 'render',
+  function(Anteater, render) {
   var parent = this;
-  var user = new User();
-  this.user = function() { return user; };
-  var stats = user.stats;
   var eaters = [];
-
   var maxRotate = 0.02;
 
   this.summonAnteater = function() {
@@ -332,6 +307,56 @@ app.service('game', [
     var eater = new Anteater(x, y, r);
     eaters.push(eater);
     return eater;
+  };
+
+  this.randomMove = function(shouldFlip, shouldMove, amount) {
+      angular.forEach(eaters, function(e) {
+        if(shouldFlip) e.swapImage();
+        if(shouldMove) render.randomMove(e, amount);
+      });
+  };
+
+  this.draw = function() {
+    angular.forEach(eaters, function(e) {
+      e.draw();
+    });
+  };
+
+  this.get = function() {
+    return eaters;
+  };
+}]);
+
+app.service('game', [
+    '$interval',
+    '$timeout',
+    '$location',
+    'sound',
+    'render',
+    'User',
+    'Ant',
+    'Anteater',
+    'ants',
+    'eaters',
+    function(
+      $interval,
+      $timeout,
+      $location,
+      sound,
+      render,
+      User,
+      Ant,
+      Anteater,
+      ants,
+      eaters) {
+
+  var parent = this;
+  var user = new User();
+  this.user = function() { return user; };
+  var stats = user.stats;
+
+  this.summonAnteater = function() {
+    return eaters.summonAnteater();
   };
 
   function killRandom() {
@@ -366,10 +391,7 @@ app.service('game', [
       if(shouldAddAnt) {
         ants.add();
       }
-      angular.forEach(eaters, function(e) {
-        if(shouldEaterFlip) e.swapImage();
-        if(shouldEaterMove) render.randomMove(e, user.eaterMove.value);
-      });
+      eaters.randomMove(shouldEaterFlip, shouldEaterMove, user.eaterMove.value);
       ants.randomMove();
       render.drawObjects(ants, eaters);
     }, 250);
@@ -433,7 +455,7 @@ app.service('game', [
 
   var eats = function() {
     $timeout(function() {
-      angular.forEach(eaters, function(e) {
+      angular.forEach(eaters.get(), function(e) {
         eat(e);
       });
     }, 300);
