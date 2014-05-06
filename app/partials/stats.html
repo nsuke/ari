@@ -1,14 +1,17 @@
 <div class="container" id="gameover" data-ng:controller="StatsCtrl">
-  <h1>GAME OVER</h1>
-  <table><tbody>
-    <tr><td>ターン数</td><td>{{stats.turnCount}}</td></tr>
-    <tr><td>クリック数</td><td>{{stats.clickCount}}</td></tr>
-    <tr><td>ミスクリック数</td><td>{{stats.missCount}}</td></tr>
-    <tr><td>必殺回数</td><td>{{stats.specialCount}}</td></tr>
-    <tr><td>駆除したアリ</td><td>{{stats.killCount}}</td></tr>
-    <tr><td>普通に潰したアリ</td><td>{{stats.crushCount}}</td></tr>
-    <tr><td>必殺で潰したアリ</td><td>{{stats.specialCrushCount}}</td></tr>
-    <tr><td>食べたアリ</td><td>{{stats.eatCount}}</td></tr>
-  </tbody></table>
+  <div id="stats">
+    <h1 id="gameover-label">GAME OVER</h1>
+    <div id="stats-table-container">
+      <table id="stats"><tbody>
+        <tr><th>ターン数</th><td>{{stats.turnCount}}</td></tr>
+        <tr><th>クリック数</th><td>{{stats.clickCount}}</td></tr>
+        <tr><th>ミスクリック数</th><td>{{stats.missCount}}</td></tr>
+        <tr><th>必殺回数</th><td>{{stats.specialCount}}</td></tr>
+        <tr><th>駆除したアリ</th><td>{{stats.killCount}}</td></tr>
+        <tr><th>普通に潰したアリ</th><td>{{stats.crushCount}}</td></tr>
+        <tr><th>必殺で潰したアリ</th><td>{{stats.specialCrushCount}}</td></tr>
+        <tr><th>食べたアリ</th><td>{{stats.eatCount}}</td></tr>
+      </tbody></table>
+    </div>
+  </div>
 </div>
-

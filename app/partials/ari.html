@@ -1,6 +1,16 @@
 <div class="container" id="game" data-ng:controller="AriCtrl" data-ng:init="init()">
 
-<div id="side">
+<div class="ng-class: popup();">
+  <div class="popup-content">
+    <!--h1 class=difficulty">難易度を選んで下さい</h1-->
+    <button class="difficulty btn btn-primary" data-ng:click="setDifficulty('normal');">normal</button>
+    <button class="difficulty btn btn-primary" data-ng:click="setDifficulty('hard');">hard</button>
+  </div>
+</div>
+
+
+<div class="ng-class: content();">
+  <div id="side">
   <div class="side-content">
     <table>
       <tbody>
@@ -45,6 +55,7 @@
       <span class="ng-class: volumeStyle();"></span>
     </button>
   </div>
+</div>
 </div>
 
 </div>

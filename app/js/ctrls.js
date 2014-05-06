@@ -40,6 +40,20 @@ app.controller('AriCtrl', [
   render.load();
   sound.load();
 
+  var started = false;
+
+  $scope.popup = function() {
+    return game.started() ? "hide" : "popup";
+  };
+
+  $scope.content = function() {
+    return game.started() ? "content" : "disabled content";
+  };
+
+  $scope.setDifficulty = function(difficulty) {
+    game.start(difficulty);
+  };
+
   $scope.eaterCount = 0;
 
   $scope.skillPointStyle = function() {

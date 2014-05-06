@@ -141,6 +141,21 @@ app.factory('DiminishingUserStatus', [function() {
   return DiminishingUserStatus;
 }]);
 
+app.service('Difficulty', [function() {
+  var hard = {
+    health: 1500,
+    antRate: 0.0015,
+  };
+
+  var normal = {
+    health: 2000,
+    antRate: 0.0008,
+  };
+
+  this.hard = function() { return hard; };
+  this.normal = function() { return normal; };
+}]);
+
 app.factory('User', ['UserStatus', 'DiminishingUserStatus', 'sound', function(UserStatus, DiminishingUserStatus, sound) {
   var stats = {
     clickCount: 0,
@@ -182,6 +197,10 @@ app.factory('User', ['UserStatus', 'DiminishingUserStatus', 'sound', function(Us
 
     this.defenseUpgrade = 0;
     this.defense = new UserStatus(10, 1000, 10);
+  };
+
+  User.prototype.init = function(difficulty) {
+    this.health = difficulty.health;
   };
 
   User.prototype.levelup = function() {
@@ -286,13 +305,14 @@ app.service('ants', ['Ant', 'render', 'sound',
     ants.splice(i, 1);
   };
 
-  var rotDiff = Math.PI * 0.3;
+  var vs = Math.PI * 0.03;
+  var vr = 2.0;
   this.randomMove = function() {
     angular.forEach(ants, function(e) {
-      e.rotate += Math.random() * rotDiff * 2 - rotDiff;
-      var amount = 5.0 * Math.random() + 0.1;
-      e.proceed(amount);
-      //render.randomMove(e, 5);
+      var as = Math.random() * vs * 2 - vs;
+      var ar = Math.random() * vr * 2 - vr;
+      e.updateVelocity(ar, as);
+      e.updateLocation();
     });
   };
 }]);
@@ -342,6 +362,7 @@ app.service('game', [
     'Anteater',
     'ants',
     'eaters',
+    'Difficulty',
     function(
       $interval,
       $timeout,
@@ -352,7 +373,8 @@ app.service('game', [
       Ant,
       Anteater,
       ants,
-      eaters) {
+      eaters,
+      Difficulty) {
 
   var parent = this;
   var user = new User();
@@ -408,9 +430,13 @@ app.service('game', [
 
   var antIncoming = false;
   var drawLoop;
-  function start() {
+  var difficulty;
+  this.start = function(_difficulty_) {
+    difficulty = _difficulty_ == 'hard' ? Difficulty.hard() : Difficulty.normal();
+    user.init(difficulty);
     antIncoming = true;
-  }
+    started = true;
+  };
 
   function stop() {
     antIncoming = false;
@@ -466,10 +492,13 @@ app.service('game', [
   };
 
   var started = false;
+  this.started = function() {
+    return started;
+  };
   this.handleClick = function(e) {
-    if(!started) {
-      start();
-    }
+//    if(!started) {
+//      parent.start();
+//    }
     if(user.clicks <= 0) return;
     var isLast = user.clicks == 1;
     --user.clicks;
@@ -514,8 +543,9 @@ app.service('game', [
     this.antsPerTurn = 3;
   };
 
-  Enemy.prototype.nextTurn = function(numTurns) {
-    var n1 = 3 + Math.pow(numTurns, 1 + numTurns * 0.0015) * 0.1;
+  Enemy.prototype.nextTurn = function(numTurns, difficulty) {
+    var rate = difficulty.antRate;
+    var n1 = 3 + Math.pow(numTurns, 1 + numTurns * rate) * 0.1;
     this.antsPerTurn = Math.floor(n1);
   };
 
@@ -526,7 +556,7 @@ app.service('game', [
     if(!user.nextTurn(ants.count())) {
       gameover();
     }
-    enemy.nextTurn(stats.turnCount);
+    enemy.nextTurn(stats.turnCount, difficulty);
     var added = ants.addAnts(enemy.antsPerTurn, false);
     angular.forEach(added, function(e) {
       e.draw();
@@ -595,15 +625,26 @@ app.factory('Ant', ['Drawable', 'render', function(Drawable, render) {
     this.reverseImage = render.image('antReversed');
     this.imageWidth = 18.0;
     this.imageHeight = 25.0;
+    this.dr = Math.random() * maxDr;
+    this.ds = 0.0;
   };
   Ant.prototype = new Drawable();
   Ant.prototype.withinArea = function(x, y) {
     return this.x <= x && this.x + antWidth >= x && this.y <= y && this.y + antHeight >= y;
   };
-  Ant.prototype.proceed = function(amount) {
+  var maxDr = 6.0;
+  var maxDs = Math.PI * 0.06;
+  Ant.prototype.updateVelocity = function(ar, as) {
+    this.dr += ar;
+    this.dr = Math.min(Math.max(this.dr, 1.0), maxDr);
+    this.ds += as;
+    this.ds = Math.min(Math.max(this.ds, -maxDs), maxDs);
+    this.rotate += this.ds;
+  };
+  Ant.prototype.updateLocation = function() {
     var theta = this.rotate + Math.PI * 0.5;
-    var x = amount * Math.cos(theta);
-    var y = amount * Math.sin(theta);
+    var x = this.dr * Math.cos(theta);
+    var y = this.dr * Math.sin(theta);
     this.x += x;
     this.y += y;
     render.truncateCoords(this);
