@@ -286,7 +286,7 @@ app.service('ants', ['Ant', 'render', 'sound',
     ants.splice(i, 1);
   };
 
-  var rotDiff = Math.PI * 0.3
+  var rotDiff = Math.PI * 0.3;
   this.randomMove = function() {
     angular.forEach(ants, function(e) {
       e.rotate += Math.random() * rotDiff * 2 - rotDiff;
