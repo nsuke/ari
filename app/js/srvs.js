@@ -39,6 +39,12 @@ app.service('render', ['Image', 'canvas', function(Image, canvas) {
     };
   };
 
+  this.randomMove = function(obj, ammount) {
+    obj.x += Math.random() * ammount * 2 - ammount;
+    obj.y += Math.random() * ammount * 2 - ammount;
+    parent.truncateCoords(obj);
+  };
+
   var imageFiles = {
     'ant': 'img/ant.png',
     'antReversed': 'img/ant_r.png',
@@ -97,9 +103,7 @@ app.service('render', ['Image', 'canvas', function(Image, canvas) {
     angular.forEach(eaters, function(e) {
       e.draw();
     });
-    angular.forEach(ants, function(e) {
-      e.draw();
-    });
+    ants.draw();
   };
 }]);
 
@@ -142,7 +146,19 @@ app.factory('DiminishingUserStatus', [function() {
 }]);
 
 app.factory('User', ['UserStatus', 'DiminishingUserStatus', 'sound', function(UserStatus, DiminishingUserStatus, sound) {
+  var stats = {
+    clickCount: 0,
+    killCount: 0,
+    eatCount: 0,
+    crushCount: 0,
+    specialCrushCount: 0,
+    missCount: 0,
+    turnCount: 0,
+    specialCount: 0,
+  };
+
   var User = function() {
+    this.stats = stats;
     this.health = 1500;
     this.clicksPerTurn = 3;
     this.clicks = this.clicksPerTurn;
@@ -153,7 +169,7 @@ app.factory('User', ['UserStatus', 'DiminishingUserStatus', 'sound', function(Us
     this.skillPoint = 0;
 
     this.specialUpgrade = 0;
-    this.specialRate = new DiminishingUserStatus(0.0007, 1.0, 0.008);
+    this.specialRate = new DiminishingUserStatus(0.0007, 0.9, 0.008);
     this.specialKill = new UserStatus(18.5, 1000, 1.5);
 
     this.eaterUpgrade = 0;
@@ -174,7 +190,7 @@ app.factory('User', ['UserStatus', 'DiminishingUserStatus', 'sound', function(Us
 
   User.prototype.levelup = function() {
     sound.play('level');
-    var nextLevel = Math.floor(Math.pow(this.level, 1.2) * 8 + 5);
+    var nextLevel = Math.floor(Math.pow(this.level, 1+this.level*0.008) * 8 + 5);
     this.level++;
     this.levelupRate = this.levelupRate + nextLevel;
     this.skillPoint += 2;
@@ -201,48 +217,24 @@ app.factory('User', ['UserStatus', 'DiminishingUserStatus', 'sound', function(Us
   return User;
 }]);
 
-app.service('game', [
-    '$interval',
-    '$timeout',
-    '$location',
-    'appData',
-    'sound',
-    'render',
-    'User',
-    'Ant',
-    'Anteater',
-    function(
-      $interval,
-      $timeout,
-      $location,
-      appData,
-      sound,
-      render,
-      User,
-      Ant,
-      Anteater) {
-
-  var parent = this;
-  var stats = appData.getStats();
-  var user = new User();
-  this.user = function() { return user; };
-  var eaters = [];
-  var ants = [];
-  this.ants = function() { return ants; };
+app.service('ants', ['Ant', 'render', 'sound',
+  function(Ant, render, sound) {
 
   var maxRotate = 0.02;
+  var parent = this;
+  var ants = [];
 
-  this.summonAnteater = function() {
-    var coords = render.randomCoords(50);
-    var x = coords.x;
-    var y = coords.y;
-    var r = Math.random() * maxRotate - maxRotate * 0.5;
-    var eater = new Anteater(x, y, r);
-    eaters.push(eater);
-    return eater;
+  this.count = function() {
+    return ants.length;
   };
 
-  function addAnt() {
+  this.draw = function() {
+    angular.forEach(ants, function(e) {
+      e.draw();
+    });
+  };
+
+  this.add = function() {
     var coords = render.randomCoords(50);
     var x = coords.x;
     var y = coords.y;
@@ -250,19 +242,23 @@ app.service('game', [
     var ant = new Ant(x, y, r);
     ants.push(ant);
     return ant;
-  }
-      var context = render.context();
+  };
 
-  function dieRandom() {
+  this.addAnts = function(n, redraw) {
+    var added = [];
+    while (n--) { added.push(parent.add()); }
+    return added;
+  };
+
+  this.pickRandom = function() {
     if(ants.length > 0) {
       var i = Math.floor(Math.random() * ants.length);
-      ants[i].erase(context);
-      killed(i);
-      return true;
+      //killed(i);
+      return i;
     } else {
-      return false;
+      return -1;
     }
-  }
+  };
 
   this.allAntsWithin = function(centerX, centerY, radius, max) {
     var ret = [];
@@ -281,10 +277,70 @@ app.service('game', [
     return ret;
   };
 
-  function randomMove(obj, ammount) {
-    obj.x += Math.random() * ammount * 2 - ammount;
-    obj.y += Math.random() * ammount * 2 - ammount;
-    render.truncateCoords(obj);
+  this.die = function(i, snd) {
+    ants[i].erase();
+    if(snd === null) {
+    } else if(snd) {
+      sound.play(snd);
+    } else {
+      sound.play(Math.random() > 0.7 ? 'dead1' : 'dead2');
+    }
+    ants.splice(i, 1);
+  };
+
+  this.randomMove = function() {
+    angular.forEach(ants, function(e) {
+      render.randomMove(e, 5);
+    });
+  };
+}]);
+
+app.service('game', [
+    '$interval',
+    '$timeout',
+    '$location',
+    'sound',
+    'render',
+    'User',
+    'Ant',
+    'Anteater',
+    'ants',
+    function(
+      $interval,
+      $timeout,
+      $location,
+      sound,
+      render,
+      User,
+      Ant,
+      Anteater,
+      ants) {
+
+  var parent = this;
+  var user = new User();
+  this.user = function() { return user; };
+  var stats = user.stats;
+  var eaters = [];
+
+  var maxRotate = 0.02;
+
+  this.summonAnteater = function() {
+    var coords = render.randomCoords(50);
+    var x = coords.x;
+    var y = coords.y;
+    var r = Math.random() * maxRotate - maxRotate * 0.5;
+    var eater = new Anteater(x, y, r);
+    eaters.push(eater);
+    return eater;
+  };
+
+  function killRandom() {
+    var i = ants.pickRandom();
+    if(i >= 0) {
+      killed(i);
+      return true;
+    }
+    return false;
   }
 
   var frame = 0;
@@ -301,41 +357,27 @@ app.service('game', [
     user.crushRadius.update(user.crushUpgrade);
     user.crushKill.update(user.crushUpgrade);
     user.defense.update(user.defenseUpgrade);
-    addAnts(5);
+    ants.addAnts(5);
     //parent.summonAnteater().draw();
     drawLoop = $interval(function() {
       var shouldEaterMove = ++frame % 6 === 0;
       var shouldEaterFlip = frame % 2 === 0;
       var shouldAddAnt = antIncoming && (frame % 8 === 0);
       if(shouldAddAnt) {
-        addAnt();
+        ants.add();
       }
       angular.forEach(eaters, function(e) {
         if(shouldEaterFlip) e.swapImage();
-        if(shouldEaterMove) randomMove(e, user.eaterMove.value);
+        if(shouldEaterMove) render.randomMove(e, user.eaterMove.value);
       });
-      angular.forEach(ants, function(e) {
-        randomMove(e, 5);
-      });
+      ants.randomMove();
       render.drawObjects(ants, eaters);
     }, 250);
   };
   function killed(i, snd) {
-    if(snd === null) {
-    } else if(snd) {
-      sound.play(snd);
-    } else {
-      sound.play(Math.random() > 0.7 ? 'dead1' : 'dead2');
-    }
-    ants.splice(i, 1);
+    ants.die(i, snd);
     user.killed();
     stats.killCount++;
-  }
-
-  function addAnts(n, redraw) {
-    var added = [];
-    while (n--) { added.push(addAnt()); }
-    return added;
   }
 
   var antIncoming = false;
@@ -352,36 +394,35 @@ app.service('game', [
   function special() {
     stats.specialCount++;
     sound.play('special');
-    var n = Math.min(user.specialKill.value, ants.length);
+    var n = Math.min(user.specialKill.value, ants.count());
     var t1 = n > user.specialKill.value > 42 ? 33 : 66;
     var t2 = Math.max(t1, 2400 - t1 * n);
     n = user.specialKill.value;
     $timeout(function() {
       var loop = $interval(function() {
-        if(--n <= 0 || ants.length <= 0) {
+        if(--n <= 0 || ants.count() <= 0) {
           $interval.cancel(loop);
         }
-        if(dieRandom()) {
+        if(killRandom()) {
           stats.specialCrushCount++;
         } else {
-          $interval.cancel(loop);
+          //$interval.cancel(loop);
         }
       }, t1);
     }, t2);
   }
 
-
   var eat = function(e) {
     var eater = e.centerCoords();
     e.drawRadius(user.eaterRadius.value);
     var radius = user.eaterRadius.value;
-    var toBeEaten = parent.allAntsWithin(eater.x, eater.y, user.eaterRadius.value, user.eaterEat.value);
+    var toBeEaten = ants.allAntsWithin(eater.x, eater.y, user.eaterRadius.value, user.eaterEat.value);
     toBeEaten.sort(function(a, b) { return a - b; });
     var n = toBeEaten.length;
     if(n > 0) {
       sound.play(Math.random() > 0.8 ? 'eat2' : 'eat1');
     }
-    while(n > 0 && ants.length > 0) {
+    while(n > 0 && ants.count() > 0) {
       var i = toBeEaten[--n];
       if(Math.random() < user.eaterRate.value) {
         killed(i, null);
@@ -413,15 +454,15 @@ app.service('game', [
     var y =clicked.y;
 
     render.drawCircle(x, y, r);
-    var killing = parent.allAntsWithin(x, y, r);
+    var killing = ants.allAntsWithin(x, y, r);
     killing.sort(function(a, b) { return a - b; });
     var n = Math.min(killing.length, Math.max(1, user.crushKill.value));
     if(n > 0) {
-      while(n > 0 && ants.length > 0) {
+      while(n > 0 && ants.count() > 0) {
         var i = killing[--n];
         var ant = ants[i];
         if(ant) {
-          ant.erase(context);
+          ant.erase();
         }
         killed(i);
         stats.crushCount++;
@@ -448,8 +489,7 @@ app.service('game', [
   };
 
   Enemy.prototype.nextTurn = function(numTurns) {
-    var n1 = 3 + Math.pow(numTurns, 1.25) * 0.08;
-    //$log.log(n1);
+    var n1 = 3 + Math.pow(numTurns, 1 + numTurns * 0.0015) * 0.1;
     this.antsPerTurn = Math.floor(n1);
   };
 
@@ -457,17 +497,15 @@ app.service('game', [
 
   function nextTurn() {
     stats.turnCount++;
-    if(!user.nextTurn(ants.length)) {
+    if(!user.nextTurn(ants.count())) {
       gameover();
     }
     enemy.nextTurn(stats.turnCount);
-    var added = addAnts(enemy.antsPerTurn, false);
+    var added = ants.addAnts(enemy.antsPerTurn, false);
     angular.forEach(added, function(e) {
       e.draw();
     });
-    //$timeout(function() {
-      eats();
-    //}, 1);
+    eats();
   }
 }]);
 
@@ -496,7 +534,7 @@ app.factory('Drawable', ['render', function(render) {
     context.restore();
   };
 
-  Drawable.prototype.erase = function(context) {
+  Drawable.prototype.erase = function() {
     this.draw(this.reverseImage);
   };
   return Drawable;
@@ -539,21 +577,6 @@ app.factory('Anteater', ['Drawable', 'render', 'sound', function(Drawable, rende
     this.image = this.image == img2 ? img1 : img2;
   };
   return Anteater;
-}]);
-
-app.service('appData', [function() {
-  var stats = {
-    clickCount: 0,
-    killCount: 0,
-    eatCount: 0,
-    crushCount: 0,
-    specialCrushCount: 0,
-    missCount: 0,
-    turnCount: 0,
-    specialCount: 0,
-  };
-  this.getStats = function() { return stats; };
-
 }]);
 
 app.service('sound', ['Audio', function(Audio) { var repo = {};

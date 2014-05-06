@@ -5,31 +5,37 @@ var app = angular.module('ariCtrls', []);
 app.controller('StatsCtrl', [
     '$scope',
     '$location',
-    'appData',
-    function($scope, $location, appData) {
-      $scope.stats = appData.getStats();
-      if($scope.stats.turnCount === 0) {
+    'game',
+    function($scope, $location, game) {
+      var redirect = true;
+      if(game && game.user && game.user().stats) {
+        $scope.stats = game.user().stats;
+        if(game.user().stats.turnCount) {
+          redirect = false;
+        }
+      }
+      if(redirect) {
         $location.path('/game');
       }
     }]);
 
 app.controller('AriCtrl', [
     '$scope',
-    'appData',
     'sound',
     'render',
+    'ants',
     'game',
     function(
       $scope,
-      appData,
       sound,
       render,
+      ants,
       game) {
 
-  var stats = appData.getStats();
-  $scope.stats = stats;
   var user = game.user();
   $scope.user = user;
+  var stats = user.stats;
+  $scope.stats = stats;
 
   render.load();
   sound.load();
@@ -40,7 +46,6 @@ app.controller('AriCtrl', [
     return user.skillPoint > 0 ? "btn btn-danger" : "btn btn-primary";
   };
 
-  var ants = game.ants();
   $scope.ants = ants;
 
   var context = render.context();

@@ -25,7 +25,6 @@ describe('ari controllers', function() {
       scope = $rootScope.$new();
       ctrl = $controller('AriCtrl', {
         $scope: scope,
-
       });
     }));
 
@@ -36,15 +35,26 @@ describe('ari controllers', function() {
   });
 
   describe('StatsCtrl', function() {
+    var game;
     var scope;
     var location;
     var ctrl;
     beforeEach(inject(function($rootScope, $controller, $location) {
+      game = {
+        user: function() {
+          return {
+            stats: {
+              turnCount: 0,
+            }
+          };
+        }
+      };
       scope = $rootScope.$new();
       location = $location;
       ctrl = $controller('StatsCtrl', {
         $scope: scope,
         $location: location,
+        game: game
       });
     }));
 
