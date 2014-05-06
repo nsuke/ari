@@ -32,7 +32,6 @@ describe('ari controllers', function() {
     it('should construct', function() {
       expect(typeof ctrl).not.toBe('undefined');
       expect(ctrl).toBeDefined();
-      expect(ctrl).not.toBeNull();
     });
   });
 
@@ -51,7 +50,6 @@ describe('ari controllers', function() {
 
     it('should load successfully', function() {
       expect(ctrl).toBeDefined();
-      expect(ctrl).not.toBeNull();
     });
 
     it('should assign stats to its scope', function() {

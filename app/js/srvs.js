@@ -103,13 +103,13 @@ app.service('render', ['Image', 'canvas', function(Image, canvas) {
   };
 }]);
 
-app.factory('User', ['sound', function(sound) {
+app.factory('UserStatus', ['sound', function(sound) {
   var UserStatus = function(initValue, maxValue, step, floating) {
     this.floating = floating;
     this.initValue = initValue;
-    this.value = initValue;
-    this.step = step;
     this.maxValue = maxValue;
+    this.step = step;
+    this.value = initValue;
   };
 
   UserStatus.prototype.update = function(level) {
@@ -117,6 +117,31 @@ app.factory('User', ['sound', function(sound) {
           this.maxValue, this.initValue + this.step * level);
     this.value = this.floating ? v : Math.floor(v);
   };
+  return UserStatus;
+}]);
+
+app.factory('DiminishingUserStatus', [function() {
+  var DiminishingUserStatus = function(init, max, rate) {
+    this.floating = true;
+    this.initValue = init;
+    this.maxValue = max;
+    this.step = 1.0 - rate;
+    this.value = init;
+    this.level = 0;
+  };
+  DiminishingUserStatus.prototype.update = function(level) {
+    var n = level - this.level;
+    var cur = this.value;
+    while(n-- > 0) {
+      cur = this.maxValue - (this.maxValue - cur) * this.step;
+    }
+    this.level = level;
+    this.value = cur;
+  };
+  return DiminishingUserStatus;
+}]);
+
+app.factory('User', ['UserStatus', 'DiminishingUserStatus', 'sound', function(UserStatus, DiminishingUserStatus, sound) {
   var User = function() {
     this.health = 1500;
     this.clicksPerTurn = 3;
@@ -128,7 +153,7 @@ app.factory('User', ['sound', function(sound) {
     this.skillPoint = 0;
 
     this.specialUpgrade = 0;
-    this.specialRate = new UserStatus(0.0007, 1.0, 0.008, true);
+    this.specialRate = new DiminishingUserStatus(0.0007, 1.0, 0.008);
     this.specialKill = new UserStatus(18.5, 1000, 1.5);
 
     this.eaterUpgrade = 0;
@@ -162,7 +187,7 @@ app.factory('User', ['sound', function(sound) {
     }
   };
 
-  User.prototype.nextTurn = function(turnCount, antsCount) {
+  User.prototype.nextTurn = function(antsCount) {
     var dmg = antsCount - this.defense.value;
     if(dmg > 0)
       this.health -= dmg;
@@ -432,7 +457,7 @@ app.service('game', [
 
   function nextTurn() {
     stats.turnCount++;
-    if(!user.nextTurn(stats.turnCount, ants.length)) {
+    if(!user.nextTurn(ants.length)) {
       gameover();
     }
     enemy.nextTurn(stats.turnCount);

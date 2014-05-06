@@ -15,7 +15,6 @@ describe('ari services', function() {
 
     it('should construct', function() {
       expect(render).toBeDefined();
-      expect(render).not.toBeNull();
     });
 
     it('should truncate coordinates', function() {
@@ -68,6 +67,58 @@ describe('ari services', function() {
 
       coord = render.randomCoords(h / 2);
       expect(coord.y).toBe(h / 2);
+    });
+
+    it('should load images', function() {
+      render.load();
+      expect(render.image('ant')).toBeDefined();
+      expect(render.image('antReversed')).toBeDefined();
+      expect(render.image('eater1')).toBeDefined();
+      expect(render.image('eater2')).toBeDefined();
+      expect(render.image('invalid')).not.toBeDefined();
+    });
+  });
+
+  describe('UserStatus', function() {
+    var UserStatus;
+    beforeEach(inject(function(_UserStatus_) {
+      UserStatus = _UserStatus_;
+    }));
+
+    it('should update its value', function() {
+      var u = new UserStatus(42, 150, 8);
+      u.update(0);
+      expect(u.value).toBe(42);
+      u.update(8);
+      expect(u.value).toBe(8 * 8 + 42);
+      u.update(888);
+      expect(u.value).toBe(150);
+    });
+  });
+
+  describe('DiminishingUserStatus', function() {
+    var DiminishingUserStatus;
+    beforeEach(inject(function(_DiminishingUserStatus_) {
+      DiminishingUserStatus = _DiminishingUserStatus_;
+    }));
+
+    it('should update its value', function() {
+      var s1 = new DiminishingUserStatus(30.0, 75.0, 0.01);
+      s1.update(0);
+      expect(s1.value).toBe(30.0);
+      s1.update(5);
+      expect(s1.value).toBe(75 - 45 * Math.pow(0.99, 5));
+    });
+
+    it('should update to consistent value with level', function() {
+      var s1 = new DiminishingUserStatus(30.0, 75.0, 0.08);
+      var s2 = new DiminishingUserStatus(30.0, 75.0, 0.08);
+      s1.update(2);
+      s1.update(3);
+      s1.update(4);
+      s1.update(5);
+      s2.update(5);
+      expect(s1.value).toBe(s2.value);
     });
   });
 });
