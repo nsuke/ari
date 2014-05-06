@@ -8,27 +8,22 @@ app.factory('Audio', function() {
 app.factory('Image', function() {
   return Image;
 });
-app.factory('canvas', function() {
-  var canvas = angular.element("#myCanvas")[0];
-  return canvas;
-});
 
-app.service('render', ['Image', 'canvas', function(Image, canvas) {
+app.service('render', ['Image', function(Image) {
   var parent = this;
+  var canvas;
   var width = 480;
   var height = 480;
   this.width = function() { return width; };
   this.height = function() { return height; };
 
   this.truncateCoords = function(obj) {
-    var left = obj.x;
-    var right = obj.x + obj.imageWidth;
-    var top = obj.y;
-    var bottom = obj.y + obj.imageHeight;
-    if(left < 0) obj.x = 0;
-    if(right > width) obj.x = width - obj.imageWidth;
-    if(top < 0) obj.y = 0;
-    if(bottom > height) obj.y = height - obj.imageHeight;
+    var c = obj.centerCoords();
+    var r = 0.25 * (obj.imageWidth + obj.imageHeight);
+    var maxX = width - r;
+    var maxY = height - r;
+    obj.x = Math.max(Math.min(obj.x, maxX), r);
+    obj.y = Math.max(Math.min(obj.y, maxY), r);
   };
 
   this.randomCoords = function(margin) {
@@ -53,6 +48,7 @@ app.service('render', ['Image', 'canvas', function(Image, canvas) {
   };
   var images = {};
   this.load = function() {
+    canvas = angular.element("#myCanvas")[0];
     angular.forEach(imageFiles, function(v, k) {
       var img = new Image();
       img.src = v;
@@ -78,7 +74,9 @@ app.service('render', ['Image', 'canvas', function(Image, canvas) {
   };
 
   this.context = function() {
-    return canvas.getContext('2d');
+    if(canvas) {
+      return canvas.getContext('2d');
+    }
   };
 
   this.clearCanvas = function (canvas) {
@@ -218,7 +216,7 @@ app.factory('User', ['UserStatus', 'DiminishingUserStatus', 'sound', function(Us
 app.service('ants', ['Ant', 'render', 'sound',
   function(Ant, render, sound) {
 
-  var maxRotate = 0.02;
+  var maxRotate = Math.PI;
   var parent = this;
   var ants = [];
 
@@ -232,11 +230,13 @@ app.service('ants', ['Ant', 'render', 'sound',
     });
   };
 
-  this.add = function() {
-    var coords = render.randomCoords(50);
-    var x = coords.x;
-    var y = coords.y;
-    var r = Math.random() * maxRotate - maxRotate * 0.5;
+  this.add = function(x, y, r) {
+    if(typeof x == 'undefined') {
+      var coords = render.randomCoords(50);
+      x = coords.x;
+      y = coords.y;
+    }
+    r = typeof r == 'undefined' ? Math.random() * maxRotate - maxRotate * 0.5 : r;
     var ant = new Ant(x, y, r);
     ants.push(ant);
     return ant;
@@ -286,9 +286,13 @@ app.service('ants', ['Ant', 'render', 'sound',
     ants.splice(i, 1);
   };
 
+  var rotDiff = Math.PI * 0.3
   this.randomMove = function() {
     angular.forEach(ants, function(e) {
-      render.randomMove(e, 5);
+      e.rotate += Math.random() * rotDiff * 2 - rotDiff;
+      var amount = 5.0 * Math.random() + 0.1;
+      e.proceed(amount);
+      //render.randomMove(e, 5);
     });
   };
 }]);
@@ -299,7 +303,7 @@ app.service('eaters', ['Anteater', 'render',
   var eaters = [];
   var maxRotate = 0.02;
 
-  this.summonAnteater = function() {
+  this.summon = function() {
     var coords = render.randomCoords(50);
     var x = coords.x;
     var y = coords.y;
@@ -356,7 +360,7 @@ app.service('game', [
   var stats = user.stats;
 
   this.summonAnteater = function() {
-    return eaters.summonAnteater();
+    return eaters.summon();
   };
 
   function killRandom() {
@@ -394,7 +398,7 @@ app.service('game', [
       eaters.randomMove(shouldEaterFlip, shouldEaterMove, user.eaterMove.value);
       ants.randomMove();
       render.drawObjects(ants, eaters);
-    }, 250);
+    }, 200);
   };
   function killed(i, snd) {
     ants.die(i, snd);
@@ -538,21 +542,41 @@ app.factory('Drawable', ['render', function(render) {
     this.rotate = rotate ? rotate : 0;
   };
 
+  Drawable.prototype.canvasCoords = function() {
+    var cos = Math.cos(-this.rotate);
+    var sin = Math.sin(-this.rotate);
+    var w = this.imageWidth * 0.5;
+    var h = this.imageHeight * 0.5;
+    var x = this.x;
+    var y = this.y;
+    return {
+      x: x * cos - y * sin - w,
+      y: y * cos + x * sin - h
+    };
+  };
+
   Drawable.prototype.centerCoords = function() {
-    var cx = this.x + 0.5 * this.imageWidth;
-    var cy = this.y + 0.5 * this.imageHeight;
-    return { x: cx, y: cy };
+//    var x = this.x + 0.5 * this.imageWidth;
+//    var y = this.y + 0.5 * this.imageHeight;
+//    var cos = Math.cos(this.rotate);
+//    var sin = Math.sin(this.rotate);
+//    var cx = x * cos - y * sin;
+//    var cy = y * cos + x * sin;
+//    return { x: cx, y: cy };
+    return { x: this.x, y: this.y };
   };
 
   Drawable.prototype.draw = function(image) {
     var context = render.context();
     image = typeof image == 'undefined' ? this.image : image;
+    var c = this.canvasCoords();
+
     if(typeof image == 'undefined') return;
     if (this.rotate) {
       context.save();
       context.rotate(this.rotate);
     }
-    context.drawImage(image, this.x, this.y, this.imageWidth, this.imageHeight);
+    context.drawImage(image, c.x, c.y, this.imageWidth, this.imageHeight);
     context.restore();
   };
 
@@ -575,6 +599,14 @@ app.factory('Ant', ['Drawable', 'render', function(Drawable, render) {
   Ant.prototype = new Drawable();
   Ant.prototype.withinArea = function(x, y) {
     return this.x <= x && this.x + antWidth >= x && this.y <= y && this.y + antHeight >= y;
+  };
+  Ant.prototype.proceed = function(amount) {
+    var theta = this.rotate + Math.PI * 0.5;
+    var x = amount * Math.cos(theta);
+    var y = amount * Math.sin(theta);
+    this.x += x;
+    this.y += y;
+    render.truncateCoords(this);
   };
   return Ant;
 }]);

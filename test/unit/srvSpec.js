@@ -20,30 +20,38 @@ describe('ari services', function() {
     it('should truncate coordinates', function() {
       var imgWidth = 33.3;
       var imgHeight = 33.3;
-      var maxWidth = render.width() - imgWidth;
-      var maxHeight = render.height() - imgHeight;
+      var maxWidth = render.width();
+      var maxHeight = render.height();
       var obj = {
         imageWidth: imgWidth,
-        imageHeight: imgHeight
+        imageHeight: imgHeight,
+        centerCoords: function() {
+          return {
+            x: this.x,
+            y: this.y
+          }
+        }
       };
 
       obj.x = 30000;
       obj.y = 53424;
       render.truncateCoords(obj);
-      expect(obj.x).toBe(maxWidth);
-      expect(obj.y).toBe(maxHeight);
+      expect(obj.x).toBeLessThan(maxWidth);
+      expect(obj.y).toBeLessThan(maxHeight);
 
       obj.x = -239487;
       obj.y = -874;
       render.truncateCoords(obj);
-      expect(obj.x).toBe(0);
-      expect(obj.y).toBe(0);
+      expect(obj.x).toBeGreaterThan(0);
+      expect(obj.y).toBeGreaterThan(0);
 
-      obj.x = maxWidth - 8;
-      obj.y = maxWidth - 11;
+      var cx = maxWidth / 2;
+      var cy = maxWidth / 2;
+      obj.x = cx+1;
+      obj.y = cy-1;
       render.truncateCoords(obj);
-      expect(obj.x).toBe(maxWidth - 8);
-      expect(obj.y).toBe(maxHeight - 11);
+      expect(obj.x).toBeCloseTo(cx+1);
+      expect(obj.y).toBeCloseTo(cy-1);
     });
 
     it('should create random coordinates', function() {
@@ -119,6 +127,73 @@ describe('ari services', function() {
       s1.update(5);
       s2.update(5);
       expect(s1.value).toBe(s2.value);
+    });
+  });
+
+  describe('Drawable', function() {
+    var Drawable;
+    beforeEach(inject(function(_Drawable_) {
+      Drawable = _Drawable_;
+    }));
+
+    it('should compute center coords without rotation', function() {
+      var d = new Drawable(12.5, 9.8, 0);
+      d.imageWidth = 22.2;
+      d.imageHeight = 18.8;
+      var c = d.centerCoords();
+      expect(c.x).toBeCloseTo(12.5);
+      expect(c.y).toBeCloseTo(9.8);
+    });
+
+    it('should compute center coords with rotation', function() {
+      var d = new Drawable(12.5, 9.8, Math.PI / 3);
+      d.imageWidth = 22.2;
+      d.imageHeight = 18.8;
+      var c = d.centerCoords();
+      expect(c.x).toBeCloseTo(12.5);
+      expect(c.y).toBeCloseTo(9.8);
+    });
+
+    it('should compute canvas coords without rotation', function() {
+      var d = new Drawable(12.5, 9.8, 0);
+      d.imageWidth = 22.2;
+      d.imageHeight = 18.8;
+      var c = d.canvasCoords();
+      expect(c.x).toBeCloseTo(12.5 - 0.5 * 22.2);
+      expect(c.y).toBeCloseTo(9.8 - 0.5 * 18.8);
+    });
+
+  });
+
+  describe('ants', function() {
+    var ants;
+    beforeEach(inject(function(_ants_) {
+      ants = _ants_;
+    }));
+
+    it('should add ant', function() {
+      var a = ants.add(12.8, 18.2, 0);
+      expect(a.x).toBeCloseTo(12.8);
+      expect(a.y).toBeCloseTo(18.2);
+    });
+
+    it('should list ants within circle', function() {
+      var a1 = ants.add(10.5, 10.5, 0);
+      var a2 = ants.add(11.45, 11.45, 0);
+      var a3 = ants.add(12.5, 12.5, 0);
+      var c = a2.centerCoords();
+      var r = ants.allAntsWithin(c.x, c.y, Math.sqrt(2));
+      expect(r.length).toBe(2);
+    });
+
+    it('should list ants within circle with rotation', function() {
+      var r = Math.PI * 2 / 3
+      var a1 = ants.add(10.5, 10.5, r);
+      var a2 = ants.add(11.45, 11.45, r);
+      var a3 = ants.add(12.5, 12.5, r);
+      var c = a2.centerCoords();
+      var r = ants.allAntsWithin(c.x, c.y, Math.sqrt(2));
+      expect(r.length).toBe(2);
     });
   });
 });
