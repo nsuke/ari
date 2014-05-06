@@ -17,7 +17,8 @@ app.service('render', ['Image', 'canvas', function(Image, canvas) {
   var parent = this;
   var width = 480;
   var height = 480;
-  var margin = 50;
+  this.width = function() { return width; };
+  this.height = function() { return height; };
 
   this.truncateCoords = function(obj) {
     var left = obj.x;
@@ -30,7 +31,8 @@ app.service('render', ['Image', 'canvas', function(Image, canvas) {
     if(bottom > height) obj.y = height - obj.imageHeight;
   };
 
-  this.randomCoords = function() {
+  this.randomCoords = function(margin) {
+    margin = typeof margin == 'undefined' ? 0 : margin;
     return {
       x: Math.random() * (width - margin*2) + margin,
       y: Math.random() * (height - margin*2) + margin,
@@ -206,7 +208,7 @@ app.service('game', [
   var maxRotate = 0.02;
 
   this.summonAnteater = function() {
-    var coords = render.randomCoords();
+    var coords = render.randomCoords(50);
     var x = coords.x;
     var y = coords.y;
     var r = Math.random() * maxRotate - maxRotate * 0.5;
@@ -216,7 +218,7 @@ app.service('game', [
   };
 
   function addAnt() {
-    var coords = render.randomCoords();
+    var coords = render.randomCoords(50);
     var x = coords.x;
     var y = coords.y;
     var r = Math.random() * maxRotate - maxRotate * 0.5;

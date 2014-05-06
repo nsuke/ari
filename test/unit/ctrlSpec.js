@@ -12,7 +12,7 @@ describe('ari controllers', function() {
     var canvas = {
       getContext: function() { }
     };
-    $provide.value('Audio', {});
+    $provide.value('Audio', function(){});
     $provide.value('Image', function(){});
     $provide.value('sound', sound);
     $provide.value('canvas', canvas);
@@ -29,8 +29,10 @@ describe('ari controllers', function() {
       });
     }));
 
-    it('should load successfully', function() {
-      expect(true).toBe(true);
+    it('should construct', function() {
+      expect(typeof ctrl).not.toBe('undefined');
+      expect(ctrl).toBeDefined();
+      expect(ctrl).not.toBeNull();
     });
   });
 
@@ -48,7 +50,8 @@ describe('ari controllers', function() {
     }));
 
     it('should load successfully', function() {
-      expect(true).toBe(true);
+      expect(ctrl).toBeDefined();
+      expect(ctrl).not.toBeNull();
     });
 
     it('should assign stats to its scope', function() {
