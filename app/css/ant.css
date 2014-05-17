@@ -10,6 +10,10 @@ body {
   user-select: none;
 }
 
+#myCanvas:hover {
+  cursor: url(../img/yubi.png), pointer;
+}
+
 #gameover-label {
   font-size: 48px;
 }
