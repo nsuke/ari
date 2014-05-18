@@ -11,7 +11,11 @@ body {
 }
 
 #myCanvas:hover {
-  cursor: url(../img/yubi.png), pointer;
+  cursor: url(../img/yubi.png) -2 -8, pointer;
+}
+
+#myCanvas:active, #myCanvas:focus {
+  cursor: url(../img/yubi.png) 1 4, pointer;
 }
 
 #gameover-label {
