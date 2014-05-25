@@ -41,6 +41,58 @@ app.controller('AriCtrl', [
   sound.load();
 
   var started = false;
+  var mousePressed = false;
+  $scope.canvasMouseDown = function(e) {
+    mousePressed = true;
+    updateCursorStyle(e.clientX, e.clientY, mousePressed);
+  };
+  $scope.canvasMouseUp = function(e) {
+    mousePressed = false;
+    updateCursorStyle(e.clientX, e.clientY, mousePressed);
+  };
+  var updateCursorStyle = function(x, y, pressed) {
+    $scope.cursorStyle = {
+      pointerEvents: 'none',
+      position: 'fixed',
+      left: x - (pressed ? customCursor.pressedOffsetX : customCursor.offsetX),
+      top: y - (pressed ? customCursor.pressedOffsetX : customCursor.offsetY),
+    };
+  };
+  $scope.updateCursorStyle = function(e) {
+    updateCursorStyle(e.clientX, e.clientY, mousePressed);
+  };
+  var handCursor = {
+    url: "img/hand160.png",
+    pressedOffsetX: 80,
+    pressedOffsetY: 80,
+    offsetX: 80,
+    offsetY: 80,
+  };
+  var fingerCursor = {
+    url: "img/finger.png",
+    pressedOffsetX: 2,
+    pressedOffsetY: 10,
+    offsetX: -2,
+    offsetY: -10,
+  };
+  var customCursor;
+  var setCustomCursor = function(cur) {
+    if(customCursor != cur) {
+      $scope.cursorImage = cur.url;
+      customCursor = cur;
+      updateCursorStyle(-8000, -8000);
+    }
+  };
+  $scope.cursorImageStyle = {};
+  var enableHand = function(v) {
+    if(typeof v == 'undefined') v = true;
+    if(v) {
+      user.activateSkill(true);
+    }
+    setCustomCursor(v ? handCursor : fingerCursor);
+  };
+  $scope.enableHand = enableHand;
+  enableHand(false);
 
   $scope.popup = function() {
     return game.started() ? "hide" : "popup";
@@ -66,6 +118,7 @@ app.controller('AriCtrl', [
   $scope.canvasClick = function(e) {
     stats.clickCount++;
     game.handleClick(e);
+    enableHand(false);
   };
 
   $scope.init = function() {

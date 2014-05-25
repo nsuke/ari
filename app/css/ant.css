@@ -10,12 +10,8 @@ body {
   user-select: none;
 }
 
-#myCanvas:hover {
-  cursor: url(../img/yubi.png) -2 -8, pointer;
-}
-
-#myCanvas:active, #myCanvas:focus {
-  cursor: url(../img/yubi.png) 1 4, pointer;
+div.custom-cursor {
+  cursor: none;
 }
 
 #gameover-label {
@@ -152,7 +148,8 @@ td {
 
 #volume {
   text-align: left;
-  margin-top: 28px;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 #control-panel {

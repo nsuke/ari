@@ -1,61 +1,74 @@
-<div class="container" id="game" data-ng:controller="AriCtrl" data-ng:init="init()">
+<div class="container custom-cursor" id="game" data-ng:controller="AriCtrl" data-ng:init="init()"
+  data-ng:mousemove="updateCursorStyle($event);">
 
-<div class="ng-class: popup();">
-  <div class="popup-content">
-    <!--h1 class=difficulty">難易度を選んで下さい</h1-->
-    <button class="difficulty btn btn-primary" data-ng:click="setDifficulty('normal');">normal</button>
-    <button class="difficulty btn btn-primary" data-ng:click="setDifficulty('hard');">hard</button>
+  <div data-ng:style="cursorStyle">
+    <img data-ng:src="{{cursorImage}}" data-ng:style="cursorImageStyle">
   </div>
-</div>
 
+  <div class="ng-class: popup();">
+    <div class="popup-content">
+      <!--h1 class=difficulty">難易度を選んで下さい</h1-->
+      <button class="difficulty btn btn-primary" data-ng:click="setDifficulty('normal');">normal</button>
+      <button class="difficulty btn btn-primary" data-ng:click="setDifficulty('hard');">hard</button>
+    </div>
+  </div>
 
-<div class="ng-class: content();">
-  <div id="side">
-  <div class="side-content">
-    <table>
-      <tbody>
-      <tr><th>健康</th><td>{{user.health}}</td></tr>
-      <tr><th>ターン</th><td>{{stats.turnCount}}</td></tr>
-      <tr><th>残りクリック</th><td>{{user.clicks}}</td></tr>
-      <tr><th>アリの数</th><td>{{ants.count()}}</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="side-content">
-    <table>
-      <tr><th>レベル</th><td>{{user.level}}</td></tr>
-      <tr><th>現在の本気度</th><td>{{user.motivation}}</td></tr>
-      <tr><th>次のレベルまで</th><td>{{user.levelupRate - user.motivation}}</td></tr>
-    </table>
-  </div>
-</div>
+  <div class="ng-class: content();">
+    <div id="side">
+      <div class="side-content">
+        <table>
+          <tbody>
+          <tr><th>健康</th><td>{{user.health}}</td></tr>
+          <tr><th>ターン</th><td>{{stats.turnCount}}</td></tr>
+          <tr><th>残りクリック</th><td>{{user.clicks}}</td></tr>
+          <tr><th>アリの数</th><td>{{ants.count()}}</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="side-content">
+        <table>
+          <tr><th>レベル</th><td>{{user.level}}</td></tr>
+          <tr><th>現在の本気度</th><td>{{user.motivation}}</td></tr>
+          <tr><th>次のレベルまで</th><td>{{user.levelupRate - user.motivation}}</td></tr>
+        </table>
+      </div>
+    </div>
 
-<div id="main">
-<canvas data-ng:click="canvasClick($event);" id="myCanvas"></canvas>
-</div>
+    <div id="main">
+      <canvas data-ng:click="canvasClick($event);" data-ng:mousedown="canvasMouseDown($event)" data-ng:mouseup="canvasMouseUp($event)" id="myCanvas"></canvas>
+    </div>
 
-<div id="control-panel">
-  <div class="control-panel-elem">
-    <button class="skill btn btn-primary" disabled="true">スキルポイント <span class="badge">{{user.skillPoint}}</span></button>
+    <div id="control-panel">
+      <div class="control-panel-elem">
+        <button class="skill btn btn-primary" disabled="true">スキルポイント <span class="badge">{{user.skillPoint}}</span></button>
+      </div>
+      <div class="control-panel-elem">
+        <button class="skill ng-class: skillPointStyle();" data-ng:click="eaterUpgrade();" data-ng:class="{{}}" data-ng:disabled="user.skillPoint <= 0">アリクイ {{eaterCount}} 匹 <span class="badge">{{user.eaterUpgrade}}</span></button>
+      </div>
+      <div class="control-panel-elem">
+        <button class="skill ng-class: skillPointStyle();" data-ng:click="specialUpgrade();" data-ng:disabled="user.skillPoint <= 0">必殺技 {{user.specialRate.value * 100 | number:1}} %<span class="badge">{{user.specialUpgrade}}</span></button>
+      </div>
+      <div class="control-panel-elem">
+        <button class="skill ng-class: skillPointStyle();" data-ng:click="crushUpgrade();" data-ng:disabled="user.skillPoint <= 0">通常攻撃 {{user.crushKill.value}} 匹 <span class="badge">{{user.crushUpgrade}}</span></button>
+      </div>
+      <div class="control-panel-elem">
+        <button class="skill ng-class: skillPointStyle();" data-ng:click="defenseUpgrade();" data-ng:disabled="user.skillPoint <= 0">防御 {{user.defense.value}}<span class="badge">{{user.defenseUpgrade}}</span></button>
+      </div>
+
+      <div id="volume">
+        <button type="button" class="btn btn-default" data-ng:click="volumeToggle();">
+          <span class="ng-class: volumeStyle();"></span>
+        </button>
+      </div>
+
+      <div>
+        <progress max="{{user.skillGaugeMax}}" value="{{user.skillGaugeValue}}"></progress>
+      </div>
+
+      <div data-ng:mousedown="enableHand();" ng-show="user.skillAvailable">
+        <img src="img/hand160.png" draggable="false">
+      </div>
+    </div>
   </div>
-  <div class="control-panel-elem">
-    <button class="skill ng-class: skillPointStyle();" data-ng:click="eaterUpgrade();" data-ng:class="{{}}" data-ng:disabled="user.skillPoint <= 0">アリクイ {{eaterCount}} 匹 <span class="badge">{{user.eaterUpgrade}}</span></button>
-  </div>
-  <div class="control-panel-elem">
-    <button class="skill ng-class: skillPointStyle();" data-ng:click="specialUpgrade();" data-ng:disabled="user.skillPoint <= 0">必殺技 {{user.specialRate.value * 100 | number:1}} %<span class="badge">{{user.specialUpgrade}}</span></button>
-  </div>
-  <div class="control-panel-elem">
-    <button class="skill ng-class: skillPointStyle();" data-ng:click="crushUpgrade();" data-ng:disabled="user.skillPoint <= 0">通常攻撃 {{user.crushKill.value}} 匹 <span class="badge">{{user.crushUpgrade}}</span></button>
-  </div>
-  <div class="control-panel-elem">
-    <button class="skill ng-class: skillPointStyle();" data-ng:click="defenseUpgrade();" data-ng:disabled="user.skillPoint <= 0">防御 {{user.defense.value}}<span class="badge">{{user.defenseUpgrade}}</span></button>
-  </div>
-  <div id="volume">
-    <button type="button" class="btn btn-default" data-ng:click="volumeToggle();">
-      <span class="ng-class: volumeStyle();"></span>
-    </button>
-  </div>
-</div>
-</div>
 
 </div>

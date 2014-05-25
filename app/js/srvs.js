@@ -197,6 +197,11 @@ app.factory('User', ['UserStatus', 'DiminishingUserStatus', 'sound', function(Us
 
     this.defenseUpgrade = 0;
     this.defense = new UserStatus(10, 1000, 10);
+
+    this.activeSkill = null;
+    this.skillGaugeMax = 8;
+    this.skillGaugeValue = 0;
+    this.skillAvailable = false;
   };
 
   User.prototype.init = function(difficulty) {
@@ -211,10 +216,24 @@ app.factory('User', ['UserStatus', 'DiminishingUserStatus', 'sound', function(Us
     this.skillPoint += 2;
   };
 
+  User.prototype.activateSkill = function(v) {
+    this.activeSkill = v;
+    if(v) {
+      this.skillAvailable = false;
+      this.skillGaugeValue = 0;
+    }
+  };
+
   User.prototype.killed = function() {
     this.motivation++;
     if(this.motivation >= this.levelupRate) {
       this.levelup();
+    }
+    if(!this.activeSkill) {
+      this.skillGaugeValue = Math.min(this.skillGaugeMax, this.skillGaugeValue + 1);
+      if(this.skillGaugeValue >= this.skillGaugeMax) {
+        this.skillAvailable = true;
+      }
     }
   };
 
@@ -496,14 +515,12 @@ app.service('game', [
     return started;
   };
   this.handleClick = function(e) {
-//    if(!started) {
-//      parent.start();
-//    }
     if(user.clicks <= 0) return;
     var isLast = user.clicks == 1;
     --user.clicks;
 
-    var r = user.crushRadius.value;
+    var r = user.activeSkill ? 60 : user.crushRadius.value;
+    var maxKill = user.activeSkill ? 1000 : user.crushKill.value;
     var clicked = render.clickedCoords(e);
     var x = clicked.x;
     var y =clicked.y;
@@ -511,7 +528,7 @@ app.service('game', [
     render.drawCircle(x, y, r);
     var killing = ants.allAntsWithin(x, y, r);
     killing.sort(function(a, b) { return a - b; });
-    var n = Math.min(killing.length, Math.max(1, user.crushKill.value));
+    var n = Math.min(killing.length, Math.max(1, maxKill));
     if(n > 0) {
       while(n > 0 && ants.count() > 0) {
         var i = killing[--n];
@@ -528,6 +545,7 @@ app.service('game', [
     } else {
       stats.missCount++;
     }
+    user.activeSkill = null;
 
     if(isLast) {
       nextTurn();
@@ -586,13 +604,6 @@ app.factory('Drawable', ['render', function(render) {
   };
 
   Drawable.prototype.centerCoords = function() {
-//    var x = this.x + 0.5 * this.imageWidth;
-//    var y = this.y + 0.5 * this.imageHeight;
-//    var cos = Math.cos(this.rotate);
-//    var sin = Math.sin(this.rotate);
-//    var cx = x * cos - y * sin;
-//    var cy = y * cos + x * sin;
-//    return { x: cx, y: cy };
     return { x: this.x, y: this.y };
   };
 
