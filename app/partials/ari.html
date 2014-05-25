@@ -2,7 +2,8 @@
   data-ng:mousemove="updateCursorStyle($event);">
 
   <div data-ng:style="cursorStyle">
-    <img data-ng:src="{{cursorImage}}" data-ng:style="cursorImageStyle">
+    <img src="img/finger.png" draggable="false" ng-show="user.activeSkill === null">
+    <img src="img/hand160.png" draggable="false" ng-show="user.activeSkill === true">
   </div>
 
   <div class="ng-class: popup();">

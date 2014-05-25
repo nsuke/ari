@@ -78,12 +78,10 @@ app.controller('AriCtrl', [
   var customCursor;
   var setCustomCursor = function(cur) {
     if(customCursor != cur) {
-      $scope.cursorImage = cur.url;
       customCursor = cur;
       updateCursorStyle(-8000, -8000);
     }
   };
-  $scope.cursorImageStyle = {};
   var enableHand = function(v) {
     if(typeof v == 'undefined') v = true;
     if(v) {
