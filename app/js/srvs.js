@@ -206,6 +206,7 @@ app.factory('User', ['UserStatus', 'DiminishingUserStatus', 'sound', function(Us
     this.defense = new UserStatus(10, 1000, 10);
 
     this.activeSkill = null;
+    this.skillGaugeMaxNext = 8;
     this.skillGaugeMax = 8;
     this.skillGaugeValue = 0;
     this.skillAvailable = false;
@@ -228,6 +229,7 @@ app.factory('User', ['UserStatus', 'DiminishingUserStatus', 'sound', function(Us
     if(v) {
       this.skillAvailable = false;
       this.skillGaugeValue = 0;
+      this.skillGaugeMax = Math.max(8, this.skillGaugeMaxNext);
     }
   };
 
@@ -586,6 +588,7 @@ app.service('game', [
     var rate = difficulty.antRate;
     var n1 = 3 + Math.pow(numTurns, 1 + numTurns * rate) * 0.1;
     this.antsPerTurn = Math.floor(n1);
+    user.skillGaugeMaxNext = this.antsPerTurn * 3;
   };
 
   var enemy = new Enemy();
