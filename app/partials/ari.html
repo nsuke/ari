@@ -30,8 +30,9 @@
         <table>
           <tr><th>レベル</th><td>{{user.level}}</td></tr>
           <tr><th>現在の本気度</th><td>{{user.motivation}}</td></tr>
-          <tr><th>次のレベルまで</th><td>{{user.levelupRate - user.motivation}}</td></tr>
+          <tr><th>次のレベルまで</th><td>{{user.nextLevel - user.experience}}</td></tr>
         </table>
+        <progress max="{{user.nextLevel}}" value="{{user.experience}}"></progress>
       </div>
     </div>
 

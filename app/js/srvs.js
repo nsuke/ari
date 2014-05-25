@@ -174,7 +174,8 @@ app.factory('User', ['UserStatus', 'DiminishingUserStatus', 'sound', function(Us
     this.clicksPerTurn = 3;
     this.clicks = this.clicksPerTurn;
     this.motivation = 0;
-    this.levelupRate = 5;
+    this.experience = 0;
+    this.nextLevel = 5;
     this.level = 1;
 
     this.skillPoint = 0;
@@ -210,9 +211,9 @@ app.factory('User', ['UserStatus', 'DiminishingUserStatus', 'sound', function(Us
 
   User.prototype.levelup = function() {
     sound.play('level');
-    var nextLevel = Math.floor(Math.pow(this.level, 1+this.level*0.008) * 8 + 5);
+    this.experience = 0;
+    this.nextLevel = Math.floor(Math.pow(this.level, 1+this.level*0.008) * 8 + 5);
     this.level++;
-    this.levelupRate = this.levelupRate + nextLevel;
     this.skillPoint += 2;
   };
 
@@ -226,7 +227,8 @@ app.factory('User', ['UserStatus', 'DiminishingUserStatus', 'sound', function(Us
 
   User.prototype.killed = function() {
     this.motivation++;
-    if(this.motivation >= this.levelupRate) {
+    this.experience++;
+    if(this.experience >= this.nextLevel) {
       this.levelup();
     }
     if(!this.activeSkill) {
