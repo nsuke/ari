@@ -152,8 +152,14 @@ app.service('Difficulty', [function() {
     antRate: 0.0008,
   };
 
+  var easy = {
+    health: 2500,
+    antRate: 0.0007,
+  };
+
   this.hard = function() { return hard; };
   this.normal = function() { return normal; };
+  this.easy = function() { return easy; };
 }]);
 
 app.factory('User', ['UserStatus', 'DiminishingUserStatus', 'sound', function(UserStatus, DiminishingUserStatus, sound) {
@@ -452,8 +458,20 @@ app.service('game', [
   var antIncoming = false;
   var drawLoop;
   var difficulty;
+  var easymode = false;
   this.start = function(_difficulty_) {
-    difficulty = _difficulty_ == 'hard' ? Difficulty.hard() : Difficulty.normal();
+    switch(_difficulty_) {
+      case 'hard':
+        difficulty = Difficulty.hard();
+        break;
+      case 'normal':
+        difficulty = Difficulty.normal();
+        break;
+      case 'easy':
+        easymode = true;
+        difficulty = Difficulty.easy();
+        break;
+    }
     user.init(difficulty);
     antIncoming = true;
     started = true;
@@ -519,7 +537,6 @@ app.service('game', [
   this.handleClick = function(e) {
     if(user.clicks <= 0) return;
     var isLast = user.clicks == 1;
-    --user.clicks;
 
     var r = user.activeSkill ? 60 : user.crushRadius.value;
     var maxKill = user.activeSkill ? 1000 : user.crushKill.value;
@@ -532,6 +549,7 @@ app.service('game', [
     killing.sort(function(a, b) { return a - b; });
     var n = Math.min(killing.length, Math.max(1, maxKill));
     if(n > 0) {
+      --user.clicks;
       while(n > 0 && ants.count() > 0) {
         var i = killing[--n];
         var ant = ants[i];
@@ -545,6 +563,7 @@ app.service('game', [
         special();
       }
     } else {
+      if(!easymode) --user.clicks;
       stats.missCount++;
     }
     user.activeSkill = null;
