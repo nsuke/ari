@@ -213,8 +213,23 @@ app.factory('User', ['UserStatus', 'DiminishingUserStatus', 'sound', function(Us
     this.skillAvailable = false;
   };
 
-  User.prototype.init = function(difficulty) {
+  User.prototype.difficulty = function(difficulty) {
     this.health = difficulty.health;
+  };
+
+  User.prototype.init = function() {
+    this.specialUpgrade = 1;
+    this.eaterUpgrade = 1;
+    this.crushUpgrade = 1;
+    this.defenseUpgrade = 1;
+    this.specialRate.update(this.specialUpgrade);
+    this.specialKill.update(this.specialUpgrade);
+    this.eaterMove.update(this.eaterUpgrade);
+    this.eaterRadius.update(this.eaterUpgrade);
+    this.eaterEat.update(this.eaterUpgrade);
+    this.crushRadius.update(this.crushUpgrade);
+    this.crushKill.update(this.crushUpgrade);
+    this.defense.update(this.defenseUpgrade);
   };
 
   User.prototype.levelup = function() {
@@ -404,13 +419,19 @@ app.service('circleEffects', ['CircleEffect', 'render',
   };
 }]);
 
+app.service('user', ['User', function(User) {
+  var user = new User();
+  return user;
+}]);
+
+
 app.service('game', [
     '$interval',
     '$timeout',
     '$location',
     'sound',
     'render',
-    'User',
+    'user',
     'Ant',
     'Anteater',
     'ants',
@@ -423,7 +444,7 @@ app.service('game', [
       $location,
       sound,
       render,
-      User,
+      user,
       Ant,
       Anteater,
       ants,
@@ -432,7 +453,6 @@ app.service('game', [
       Difficulty) {
 
   var parent = this;
-  var user = new User();
   this.user = function() { return user; };
   var stats = user.stats;
 
@@ -461,18 +481,7 @@ app.service('game', [
       eaters.randomMove(shouldEaterFlip, shouldEaterMove, user.eaterMove.value);
   };
   this.init = function() {
-    user.specialUpgrade = 1;
-    user.eaterUpgrade = 1;
-    user.crushUpgrade = 1;
-    user.defenseUpgrade = 1;
-    user.specialRate.update(user.specialUpgrade);
-    user.specialKill.update(user.specialUpgrade);
-    user.eaterMove.update(user.eaterUpgrade);
-    user.eaterRadius.update(user.eaterUpgrade);
-    user.eaterEat.update(user.eaterUpgrade);
-    user.crushRadius.update(user.crushUpgrade);
-    user.crushKill.update(user.crushUpgrade);
-    user.defense.update(user.defenseUpgrade);
+    user.init();
     ants.addAnts(5);
     //parent.summonAnteater().draw();
     drawLoop = $interval(function() {
@@ -507,7 +516,7 @@ app.service('game', [
         difficulty = Difficulty.easy();
         break;
     }
-    user.init(difficulty);
+    user.difficulty(difficulty);
     antIncoming = true;
     started = true;
   };
