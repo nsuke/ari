@@ -91,7 +91,7 @@ app.service('render', ['Image', function(Image) {
     context.fill();
   };
 
-  this.drawObjects = function(ants, eaters) {
+  this.drawObjects = function(ants, eaters, circleEffects) {
     if(canvas.width != width) {
       canvas.width = width;
       canvas.height = height;
@@ -100,6 +100,7 @@ app.service('render', ['Image', function(Image) {
     var context = canvas.getContext("2d");
     eaters.draw();
     ants.draw();
+    circleEffects.draw();
   };
 }]);
 
@@ -334,8 +335,8 @@ app.service('ants', ['Ant', 'render', 'sound',
     ants.splice(i, 1);
   };
 
-  var vs = Math.PI * 0.03;
-  var vr = 2.0;
+  var vs = Math.PI * 0.03 / 10;
+  var vr = 2.0 / 10;
   this.randomMove = function() {
     angular.forEach(ants, function(e) {
       var as = Math.random() * vs * 2 - vs;
@@ -380,6 +381,29 @@ app.service('eaters', ['Anteater', 'render',
   };
 }]);
 
+app.service('circleEffects', ['CircleEffect', 'render',
+            function(CircleEffect, render) {
+  var effects = [];
+
+  this.add = function(x, y, r) {
+    effects.push(new CircleEffect(x, y, r));
+  };
+
+  this.draw = function() {
+    for (var i = effects.length - 1; i >= 0; --i) {
+      const e = effects[i];
+      e.draw();
+      if (e.done) {
+        effects.splice(i, 1);
+      }
+    }
+  };
+
+  this.get = function() {
+    return effects;
+  };
+}]);
+
 app.service('game', [
     '$interval',
     '$timeout',
@@ -391,6 +415,7 @@ app.service('game', [
     'Anteater',
     'ants',
     'eaters',
+    'circleEffects',
     'Difficulty',
     function(
       $interval,
@@ -403,6 +428,7 @@ app.service('game', [
       Anteater,
       ants,
       eaters,
+      circleEffects,
       Difficulty) {
 
   var parent = this;
@@ -423,7 +449,17 @@ app.service('game', [
     return false;
   }
 
-  var frame = 0;
+  var drawFrame = 0;
+  var gameFrame = 0;
+  var handleGameFrame = function(gameFrame) {
+      var shouldEaterMove = gameFrame % 6 === 0;
+      var shouldEaterFlip = gameFrame % 2 === 0;
+      var shouldAddAnt = antIncoming && (gameFrame % 8 === 0);
+      if(shouldAddAnt) {
+        ants.add();
+      }
+      eaters.randomMove(shouldEaterFlip, shouldEaterMove, user.eaterMove.value);
+  };
   this.init = function() {
     user.specialUpgrade = 1;
     user.eaterUpgrade = 1;
@@ -440,16 +476,13 @@ app.service('game', [
     ants.addAnts(5);
     //parent.summonAnteater().draw();
     drawLoop = $interval(function() {
-      var shouldEaterMove = ++frame % 6 === 0;
-      var shouldEaterFlip = frame % 2 === 0;
-      var shouldAddAnt = antIncoming && (frame % 8 === 0);
-      if(shouldAddAnt) {
-        ants.add();
+      ++drawFrame;
+      if (drawFrame % 6 == 0) {
+        handleGameFrame(++gameFrame);
       }
-      eaters.randomMove(shouldEaterFlip, shouldEaterMove, user.eaterMove.value);
       ants.randomMove();
-      render.drawObjects(ants, eaters);
-    }, 200);
+      render.drawObjects(ants, eaters, circleEffects);
+    }, 33);
   };
   function killed(i, snd) {
     ants.die(i, snd);
@@ -507,7 +540,7 @@ app.service('game', [
 
   var eat = function(e) {
     var eater = e.centerCoords();
-    e.drawRadius(user.eaterRadius.value);
+    circleEffects.add(eater.x, eater.y, user.eaterRadius.value);
     var radius = user.eaterRadius.value;
     var toBeEaten = ants.allAntsWithin(eater.x, eater.y, user.eaterRadius.value, user.eaterEat.value);
     toBeEaten.sort(function(a, b) { return a - b; });
@@ -540,13 +573,13 @@ app.service('game', [
     if(user.clicks <= 0) return;
     var isLast = user.clicks == 1;
 
-    var r = user.activeSkill ? 60 : user.crushRadius.value;
+    var r = user.crushRadius.value + (user.activeSkill ? 60 : 0);
     var maxKill = user.activeSkill ? 1000 : user.crushKill.value;
     var clicked = render.clickedCoords(e);
     var x = clicked.x;
     var y =clicked.y;
 
-    render.drawCircle(x, y, r);
+    circleEffects.add(x, y, r);
     var killing = ants.allAntsWithin(x, y, r);
     killing.sort(function(a, b) { return a - b; });
     var n = Math.min(killing.length, Math.max(1, maxKill));
@@ -667,8 +700,8 @@ app.factory('Ant', ['Drawable', 'render', function(Drawable, render) {
   Ant.prototype.withinArea = function(x, y) {
     return this.x <= x && this.x + antWidth >= x && this.y <= y && this.y + antHeight >= y;
   };
-  var maxDr = 6.0;
-  var maxDs = Math.PI * 0.06;
+  var maxDr = 1.2;
+  var maxDs = Math.PI * 0.01;
   Ant.prototype.updateVelocity = function(ar, as) {
     this.dr += ar;
     this.dr = Math.min(Math.max(this.dr, 1.0), maxDr);
@@ -699,14 +732,28 @@ app.factory('Anteater', ['Drawable', 'render', 'sound', function(Drawable, rende
     this.imageHeight = 40;
   };
   Anteater.prototype = new Drawable();
-  Anteater.prototype.drawRadius = function(r) {
-    var center = this.centerCoords();
-    render.drawCircle(center.x, center.y, r);
-  };
   Anteater.prototype.swapImage = function() {
     this.image = this.image == img2 ? img1 : img2;
   };
   return Anteater;
+}]);
+
+app.factory('CircleEffect', ['render', function(render) {
+  const renderCountToStay = 6;
+  var CircleEffect = function(x, y, r) {
+    this.renderCount = 0;
+    this.done = false;
+    this.x = x;
+    this.y = y;
+    this.r = r;
+  };
+  CircleEffect.prototype.draw = function() {
+    render.drawCircle(this.x, this.y, this.r);
+    if (++this.renderCount > renderCountToStay) {
+      this.done = true;
+    }
+  };
+  return CircleEffect;
 }]);
 
 app.service('sound', ['Audio', function(Audio) { var repo = {};
