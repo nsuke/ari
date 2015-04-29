@@ -104,7 +104,7 @@ app.controller('AriCtrl', [
     game.start(difficulty);
   };
 
-  $scope.eaterCount = 0;
+  $scope.eaterCount = 1;
 
   $scope.skillPointStyle = function() {
     return user.skillPoint > 0 ? "btn btn-danger" : "btn btn-primary";
