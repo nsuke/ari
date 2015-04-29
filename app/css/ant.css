@@ -96,7 +96,7 @@ canvas {
 
 button.skill {
   font-weight: bold;
-  width: 160px;
+  width: 180px;
   text-align: left;
 }
 
@@ -124,10 +124,21 @@ button.skill {
   border:0px solid;
   font-size: 1.2em;
   font-weight: bold;
-  width: 220px;
+  width: 200px;
   border-radius:15px;
   padding:10px;
   margin:10px;
+  background-color: lightgray;
+  float: top;
+}
+
+.right-side-content {
+  border:0px solid;
+  font-size: 1.2em;
+  font-weight: bold;
+  width: 180px;
+  border-radius:15px;
+  padding:10px;
   background-color: lightgray;
   float: top;
 }
@@ -151,6 +162,7 @@ td {
 #control-panel {
 	float: right;
 	margin-top:10px;
+	width: 180px;
   /*
   background-color: lightgray;
 	width: 160px;

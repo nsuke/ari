@@ -67,8 +67,8 @@
       <div>
         <progress max="{{user.skillGaugeMax}}" value="{{user.skillGaugeValue}}"></progress>
       </div>
-
-      <div data-ng:mousedown="enableHand();" ng-show="user.skillAvailable">
+      <div class="right-side-content" data-ng:mousedown="enableHand();" ng-show="user.skillAvailable">
+        <p>Click to slap !</p>
         <img src="img/hand160.png" draggable="false">
       </div>
     </div>
