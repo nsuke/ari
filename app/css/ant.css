@@ -1,5 +1,5 @@
 body {
-  font-family: ヒラギノ角ゴ Pro W3','Hiragino Kaku Gothic Pro','メイリオ',Meiryo,'ＭＳ Ｐゴシック',sans-serif;
+  font-family: 'ヒラギノ角ゴ Pro W3','Hiragino Kaku Gothic Pro','メイリオ',Meiryo,'ＭＳ Ｐゴシック',sans-serif,'Ume Gothic';
 	margin: 0;
 	background-color: black;
   -webkit-touch-callout: none;
@@ -98,10 +98,6 @@ button.skill {
   font-weight: bold;
   width: 160px;
   text-align: left;
-}
-
-span.badge {
-  float: right;
 }
 
 #gameover {

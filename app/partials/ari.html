@@ -43,19 +43,19 @@
 
     <div id="control-panel">
       <div class="control-panel-elem">
-        <button class="skill btn btn-primary" disabled="true">スキルポイント <span class="badge">{{user.skillPoint}}</span></button>
+        <button class="skill btn btn-primary" disabled="true"><span class="pull-left">スキルポイント</span><span class="pull-right badge">{{user.skillPoint}}</span></button>
       </div>
       <div class="control-panel-elem">
-        <button class="skill ng-class: skillPointStyle();" data-ng:click="eaterUpgrade();" data-ng:class="{{}}" data-ng:disabled="user.skillPoint <= 0">アリクイ {{eaterCount}} 匹 <span class="badge">{{user.eaterUpgrade}}</span></button>
+        <button class="skill ng-class: skillPointStyle();" data-ng:click="eaterUpgrade();" data-ng:class="{{}}" data-ng:disabled="user.skillPoint <= 0"><span class="pull-left">アリクイ {{eaterCount}} 匹</span><span class="pull-right badge">{{user.eaterUpgrade}}</span></button>
       </div>
       <div class="control-panel-elem">
-        <button class="skill ng-class: skillPointStyle();" data-ng:click="specialUpgrade();" data-ng:disabled="user.skillPoint <= 0">必殺技 {{user.specialRate.value * 100 | number:1}} %<span class="badge">{{user.specialUpgrade}}</span></button>
+        <button class="skill ng-class: skillPointStyle();" data-ng:click="specialUpgrade();" data-ng:disabled="user.skillPoint <= 0"><span class="pull-left">必殺技 {{user.specialRate.value * 100 | number:1}} %</span><span class="pull-right badge">{{user.specialUpgrade}}</span></button>
       </div>
       <div class="control-panel-elem">
-        <button class="skill ng-class: skillPointStyle();" data-ng:click="crushUpgrade();" data-ng:disabled="user.skillPoint <= 0">通常攻撃 {{user.crushKill.value}} 匹 <span class="badge">{{user.crushUpgrade}}</span></button>
+        <button class="skill ng-class: skillPointStyle();" data-ng:click="crushUpgrade();" data-ng:disabled="user.skillPoint <= 0"><span class="pull-left">通常攻撃 {{user.crushKill.value}} 匹</span><span class="pull-right badge">{{user.crushUpgrade}}</span></button>
       </div>
       <div class="control-panel-elem">
-        <button class="skill ng-class: skillPointStyle();" data-ng:click="defenseUpgrade();" data-ng:disabled="user.skillPoint <= 0">防御 {{user.defense.value}}<span class="badge">{{user.defenseUpgrade}}</span></button>
+        <button class="skill ng-class: skillPointStyle();" data-ng:click="defenseUpgrade();" data-ng:disabled="user.skillPoint <= 0"><span class="pull-left">防御 {{user.defense.value}}</span><span class="pull-right badge">{{user.defenseUpgrade}}</span></button>
       </div>
 
       <div id="volume">
