@@ -413,7 +413,7 @@ app.service('circleEffects', ['CircleEffect', 'render',
 
   this.draw = function() {
     for (var i = effects.length - 1; i >= 0; --i) {
-      const e = effects[i];
+      var e = effects[i];
       e.draw();
       if (e.done) {
         effects.splice(i, 1);
@@ -491,7 +491,7 @@ app.service('game', [
     parent.summonAnteater().draw();
     drawLoop = $interval(function() {
       ++drawFrame;
-      if (drawFrame % 6 == 0) {
+      if (drawFrame % 6 === 0) {
         handleGameFrame(++gameFrame);
       }
       ants.randomMove();
@@ -711,11 +711,11 @@ app.factory('Creature', ['render', 'Drawable', function(render, Drawable) {
 
   Creature.prototype.capVelocity = function(dr) {
     return Math.min(Math.max(dr, this.minDr), this.maxDr);
-  }
+  };
 
   Creature.prototype.capAngleVelocity = function(ds) {
     return Math.min(Math.max(ds, -this.maxDs), this.maxDs);
-  }
+  };
 
   Creature.prototype.updateVelocity = function(ar, as) {
     this.dr = this.capVelocity(this.dr + ar);
@@ -767,8 +767,8 @@ app.factory('Creature', ['render', 'Drawable', function(render, Drawable) {
 }]);
 
 app.factory('Ant', ['Drawable', 'Creature', 'render', function(Drawable, Creature, render) {
-  const antWidth = 18.0;
-  const antHeight = 25.0;
+  var antWidth = 18.0;
+  var antHeight = 25.0;
   var Ant = function(x, y, r) {
     this.minDr = 1;
     this.maxDr = 2;
@@ -783,7 +783,7 @@ app.factory('Ant', ['Drawable', 'Creature', 'render', function(Drawable, Creatur
     return this.x <= x && this.x + antWidth >= x && this.y <= y && this.y + antHeight >= y;
   };
 
-  const deadEffectFrames = 4;
+  var deadEffectFrames = 4;
   Ant.prototype.drawDead = function() {
     this.draw();
     this.draw(this.reverseImage);
@@ -794,7 +794,7 @@ app.factory('Ant', ['Drawable', 'Creature', 'render', function(Drawable, Creatur
 }]);
 
 app.factory('Anteater', ['Drawable', 'Creature', 'render', 'sound', 'user', function(Drawable, Creature, render, sound, user) {
-  const alternateFrames = 30;
+  var alternateFrames = 30;
   var img1;
   var img2;
   var Anteater = function(x, y, r) {
@@ -831,7 +831,7 @@ app.factory('Anteater', ['Drawable', 'Creature', 'render', 'sound', 'user', func
 }]);
 
 app.factory('CircleEffect', ['render', function(render) {
-  const renderCountToStay = 6;
+  var renderCountToStay = 6;
   var CircleEffect = function(x, y, r) {
     this.x = x;
     this.y = y;
