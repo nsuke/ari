@@ -35,23 +35,24 @@ describe('ari services', function() {
 
       obj.x = 30000;
       obj.y = 53424;
-      render.truncateCoords(obj);
-      expect(obj.x).toBeLessThan(maxWidth);
-      expect(obj.y).toBeLessThan(maxHeight);
+      var t = render.truncateCoords(obj.x, obj.y, 10, 10);
+      expect(t.x).toBeLessThan(maxWidth);
+      expect(t.y).toBeLessThan(maxHeight);
 
       obj.x = -239487;
       obj.y = -874;
-      render.truncateCoords(obj);
-      expect(obj.x).toBeGreaterThan(0);
-      expect(obj.y).toBeGreaterThan(0);
+      var t = render.truncateCoords(obj.x, obj.y, 10, 10);
+      expect(t.x).toBeGreaterThan(0);
+      expect(t.y).toBeGreaterThan(0);
 
       var cx = maxWidth / 2;
       var cy = maxWidth / 2;
       obj.x = cx+1;
       obj.y = cy-1;
-      render.truncateCoords(obj);
-      expect(obj.x).toBeCloseTo(cx+1);
-      expect(obj.y).toBeCloseTo(cy-1);
+      var t = render.truncateCoords(obj.x, obj.y, 10, 10);
+
+      expect(t.x).toBeCloseTo(cx+1);
+      expect(t.y).toBeCloseTo(cy-1);
     });
 
     it('should create random coordinates', function() {
@@ -130,14 +131,17 @@ describe('ari services', function() {
     });
   });
 
-  describe('Drawable', function() {
-    var Drawable;
-    beforeEach(inject(function(_Drawable_) {
-      Drawable = _Drawable_;
+  describe('Creature', function() {
+    var Creature;
+    beforeEach(inject(function(_Creature_) {
+      Creature = _Creature_;
     }));
 
     it('should compute center coords without rotation', function() {
-      var d = new Drawable(12.5, 9.8, 0);
+      var d = new Creature();
+      d.x = 12.5;
+      d.y = 9.8;
+      d.rotate = 0;
       d.imageWidth = 22.2;
       d.imageHeight = 18.8;
       var c = d.centerCoords();
@@ -146,21 +150,15 @@ describe('ari services', function() {
     });
 
     it('should compute center coords with rotation', function() {
-      var d = new Drawable(12.5, 9.8, Math.PI / 3);
+      var d = new Creature();
+      d.x = 12.5;
+      d.y = 9.8;
+      d.rotate = Math.PI / 3;
       d.imageWidth = 22.2;
       d.imageHeight = 18.8;
       var c = d.centerCoords();
       expect(c.x).toBeCloseTo(12.5);
       expect(c.y).toBeCloseTo(9.8);
-    });
-
-    it('should compute canvas coords without rotation', function() {
-      var d = new Drawable(12.5, 9.8, 0);
-      d.imageWidth = 22.2;
-      d.imageHeight = 18.8;
-      var c = d.canvasCoords();
-      expect(c.x).toBeCloseTo(12.5 - 0.5 * 22.2);
-      expect(c.y).toBeCloseTo(9.8 - 0.5 * 18.8);
     });
 
   });

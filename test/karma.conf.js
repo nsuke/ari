@@ -11,7 +11,7 @@ module.exports = function(config){
     ],
     autoWatch : true,
     frameworks: ['jasmine'],
-    browsers: ['PhantomJS'],
+    browsers: ['Chrome'],
     plugins: [
       'karma-junit-reporter',
       'karma-chrome-launcher',

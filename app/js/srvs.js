@@ -17,13 +17,26 @@ app.service('render', ['Image', function(Image) {
   this.width = function() { return width; };
   this.height = function() { return height; };
 
-  this.truncateCoords = function(obj) {
-    var c = obj.centerCoords();
-    var r = 0.25 * (obj.imageWidth + obj.imageHeight);
+  this.truncateCoords = function(x, y, w, h) {
+    if (isNaN(x + y + w + h)) {
+      throw new Error('Invalid argument for truncateCoords');
+    }
+    var r = 0.25 * (w + h);
     var maxX = width - r;
     var maxY = height - r;
-    obj.x = Math.max(Math.min(obj.x, maxX), r);
-    obj.y = Math.max(Math.min(obj.y, maxY), r);
+    var obj = {};
+    if (y < r || y > maxY) {
+      obj.edgeAngle = Math.PI;
+    }
+    if (x < r || x > maxX) {
+      obj.edgeAngle = Math.PI / 2;
+    }
+    obj.x = Math.max(Math.min(x, maxX), r);
+    obj.y = Math.max(Math.min(y, maxY), r);
+    if (isNaN(obj.x + obj.y)) {
+      throw new Error('Failed to truncate coords');
+    }
+    return obj;
   };
 
   this.randomCoords = function(margin) {
@@ -32,12 +45,6 @@ app.service('render', ['Image', function(Image) {
       x: Math.random() * (width - margin*2) + margin,
       y: Math.random() * (height - margin*2) + margin,
     };
-  };
-
-  this.randomMove = function(obj, ammount) {
-    obj.x += Math.random() * ammount * 2 - ammount;
-    obj.y += Math.random() * ammount * 2 - ammount;
-    parent.truncateCoords(obj);
   };
 
   var imageFiles = {
@@ -283,6 +290,7 @@ app.service('ants', ['Ant', 'render', 'sound',
   var maxRotate = Math.PI;
   var parent = this;
   var ants = [];
+  var corpses = [];
 
   this.count = function() {
     return ants.length;
@@ -292,6 +300,12 @@ app.service('ants', ['Ant', 'render', 'sound',
     angular.forEach(ants, function(e) {
       e.draw();
     });
+    for (var i = corpses.length - 1; i >= 0; --i) {
+      var e = corpses[i];
+      if (e.drawDead()) {
+        corpses.splice(i, 1);
+      }
+    }
   };
 
   this.add = function(x, y, r) {
@@ -300,7 +314,7 @@ app.service('ants', ['Ant', 'render', 'sound',
       x = coords.x;
       y = coords.y;
     }
-    r = typeof r == 'undefined' ? Math.random() * maxRotate - maxRotate * 0.5 : r;
+    r = typeof r == 'undefined' ? Math.random() * Math.PI * 2 : r;
     var ant = new Ant(x, y, r);
     ants.push(ant);
     return ant;
@@ -340,7 +354,8 @@ app.service('ants', ['Ant', 'render', 'sound',
   };
 
   this.die = function(i, snd) {
-    ants[i].erase();
+    var ant = ants[i];
+    corpses.push(ant);
     if(snd === null) {
     } else if(snd) {
       sound.play(snd);
@@ -350,14 +365,9 @@ app.service('ants', ['Ant', 'render', 'sound',
     ants.splice(i, 1);
   };
 
-  var vs = Math.PI * 0.03 / 10;
-  var vr = 2.0 / 10;
   this.randomMove = function() {
-    angular.forEach(ants, function(e) {
-      var as = Math.random() * vs * 2 - vs;
-      var ar = Math.random() * vr * 2 - vr;
-      e.updateVelocity(ar, as);
-      e.updateLocation();
+    angular.forEach(ants, function(ant) {
+      ant.randomMove();
     });
   };
 }]);
@@ -370,24 +380,21 @@ app.service('eaters', ['Anteater', 'render',
 
   this.summon = function() {
     var coords = render.randomCoords(50);
-    var x = coords.x;
-    var y = coords.y;
-    var r = Math.random() * maxRotate - maxRotate * 0.5;
-    var eater = new Anteater(x, y, r);
+    var r = Math.random() * Math.PI * 2;
+    var eater = new Anteater(coords.x, coords.y, r);
     eaters.push(eater);
     return eater;
   };
 
-  this.randomMove = function(shouldFlip, shouldMove, amount) {
-      angular.forEach(eaters, function(e) {
-        if(shouldFlip) e.swapImage();
-        if(shouldMove) render.randomMove(e, amount);
+  this.randomMove = function(amount) {
+      angular.forEach(eaters, function(eater) {
+        eater.randomMove(amount);
       });
   };
 
   this.draw = function() {
-    angular.forEach(eaters, function(e) {
-      e.draw();
+    angular.forEach(eaters, function(eater) {
+      eater.draw();
     });
   };
 
@@ -472,18 +479,16 @@ app.service('game', [
   var drawFrame = 0;
   var gameFrame = 0;
   var handleGameFrame = function(gameFrame) {
-      var shouldEaterMove = gameFrame % 6 === 0;
-      var shouldEaterFlip = gameFrame % 2 === 0;
-      var shouldAddAnt = antIncoming && (gameFrame % 8 === 0);
-      if(shouldAddAnt) {
-        ants.add();
-      }
-      eaters.randomMove(shouldEaterFlip, shouldEaterMove, user.eaterMove.value);
+    var shouldAddAnt = antIncoming && (gameFrame % 8 === 0);
+    if(shouldAddAnt) {
+      ants.add();
+    }
+    eaters.randomMove();
   };
   this.init = function() {
     user.init();
     ants.addAnts(5);
-    //parent.summonAnteater().draw();
+    parent.summonAnteater().draw();
     drawLoop = $interval(function() {
       ++drawFrame;
       if (drawFrame % 6 == 0) {
@@ -650,111 +655,189 @@ app.service('game', [
 }]);
 
 app.factory('Drawable', ['render', function(render) {
-  var Drawable = function(x, y, rotate) {
+
+  var Drawable = function(x, y, r, width, height, imageRotation) {
     this.x = x;
     this.y = y;
-    this.rotate = rotate ? rotate : 0;
-  };
-
-  Drawable.prototype.canvasCoords = function() {
-    var cos = Math.cos(-this.rotate);
-    var sin = Math.sin(-this.rotate);
-    var w = this.imageWidth * 0.5;
-    var h = this.imageHeight * 0.5;
-    var x = this.x;
-    var y = this.y;
-    return {
-      x: x * cos - y * sin - w,
-      y: y * cos + x * sin - h
-    };
-  };
-
-  Drawable.prototype.centerCoords = function() {
-    return { x: this.x, y: this.y };
+    this.r = r;
+    this.imageRotation = imageRotation;
+    this.width = width;
+    this.height = height;
+    this.halfWidth = width * 0.5;
+    this.halfHeight = height * 0.5;
   };
 
   Drawable.prototype.draw = function(image) {
-    var context = render.context();
-    image = typeof image == 'undefined' ? this.image : image;
-    var c = this.canvasCoords();
-
-    if(typeof image == 'undefined') return;
-    if (this.rotate) {
-      context.save();
-      context.rotate(this.rotate);
+    if (isNaN(this.x) || isNaN(this.y)) {
+      return;
     }
-    context.drawImage(image, c.x, c.y, this.imageWidth, this.imageHeight);
+    if (typeof image == 'undefined') {
+      image = this.image;
+    }
+    var context = render.context();
+    context.save();
+    context.translate(this.x, this.y);
+    context.rotate(this.r + this.imageRotation);
+    if (!this.flipVertical) {
+      context.translate(-this.halfWidth, -this.halfHeight);
+    } else {
+      context.translate(-this.halfWidth, this.halfHeight);
+      context.transform(1, 0, 0, -1, 0, 0);
+    }
+    context.drawImage(image, 0, 0, this.width, this.height);
     context.restore();
-  };
-
-  Drawable.prototype.erase = function() {
-    this.draw(this.reverseImage);
   };
   return Drawable;
 }]);
 
-app.factory('Ant', ['Drawable', 'render', function(Drawable, render) {
-  var antWidth = 18.0;
-  var antHeight = 25.0;
-  var Ant = function(x, y, rotate) {
-    Drawable.call(this, x, y, rotate);
+app.factory('Creature', ['render', 'Drawable', function(render, Drawable) {
+  var Creature = function(x, y, r, width, height, imageRotation) {
+    Drawable.call(this, x, y, r, width, height, imageRotation);
+    this.maxDs = Math.PI * 0.01;
+    this.dr = Math.random() * (this.maxDr - this.minDr) + this.minDr;
+    this.ds = 0.0;
+    this.baseAcceleration = 0.02;
+    this.baseRotateAcceleration = Math.PI * 0.006;
+  };
+
+  Creature.prototype = Object.create(Drawable.prototype);
+
+  Creature.prototype.transform = function(m) {
+  };
+
+  Creature.prototype.centerCoords = function() {
+    return { x: this.x, y: this.y };
+  };
+
+  Creature.prototype.capVelocity = function(dr) {
+    return Math.min(Math.max(dr, this.minDr), this.maxDr);
+  }
+
+  Creature.prototype.capAngleVelocity = function(ds) {
+    return Math.min(Math.max(ds, -this.maxDs), this.maxDs);
+  }
+
+  Creature.prototype.updateVelocity = function(ar, as) {
+    this.dr = this.capVelocity(this.dr + ar);
+    this.ds = this.capAngleVelocity(this.ds + as);
+  };
+
+  Creature.prototype.fmod = function(num, base) {
+    if (isNaN(num)) throw new Error('argument is NaN');
+    if (num >= 0 && num < base) {
+      return num;
+    } else {
+      return this.fmod(num + (num >= 0 ? -base : base), base);
+    }
+  };
+
+  Creature.prototype.updateLocation = function() {
+    if (isNaN(this.x)) return;
+    this.r = this.fmod(this.r + this.ds, Math.PI * 2);
+    var theta = this.r;
+    var dx = this.dr * Math.cos(theta);
+    if (isNaN(dx)) throw new Error('hoge');
+    var dy = this.dr * Math.sin(theta);
+    this.x += dx;
+    if (isNaN(this.x)) throw new Error('hoge');
+    this.y += dy;
+    var truncated = render.truncateCoords(this.x, this.y, this.width, this.height);
+    this.x = truncated.x;
+    this.y = truncated.y;
+    // var edgeAngle = render.truncateCoords(this);
+    if (isNaN(this.x)) throw new Error('hoge');
+    if (truncated.edgeAngle) {
+      if (Math.random() < 0.05) {
+        this.dr = 0;
+        this.r = this.fmod(2 * truncated.edgeAngle - this.r, Math.PI * 2);
+      }
+    }
+  };
+
+  Creature.prototype.randomMove = function() {
+    var baseR = this.baseAcceleration;
+    var baseS = this.baseRotateAcceleration;
+    var ar = Math.random() * baseR * 2 - baseR;
+    var as = Math.random() * baseS * 2 - baseS;
+    this.updateVelocity(ar, as);
+    this.updateLocation();
+  };
+
+  return Creature;
+}]);
+
+app.factory('Ant', ['Drawable', 'Creature', 'render', function(Drawable, Creature, render) {
+  const antWidth = 18.0;
+  const antHeight = 25.0;
+  var Ant = function(x, y, r) {
+    this.minDr = 1;
+    this.maxDr = 2;
+    Creature.call(this, x, y, r, 18.0, 25.0, Math.PI * 1.5);
     this.image = render.image('ant');
     this.reverseImage = render.image('antReversed');
-    this.imageWidth = 18.0;
-    this.imageHeight = 25.0;
-    this.dr = Math.random() * maxDr;
-    this.ds = 0.0;
+    this.deadFrames = 0;
   };
-  Ant.prototype = new Drawable();
+
+  Ant.prototype = Object.create(Creature.prototype);
   Ant.prototype.withinArea = function(x, y) {
     return this.x <= x && this.x + antWidth >= x && this.y <= y && this.y + antHeight >= y;
   };
-  var maxDr = 1.2;
-  var maxDs = Math.PI * 0.01;
-  Ant.prototype.updateVelocity = function(ar, as) {
-    this.dr += ar;
-    this.dr = Math.min(Math.max(this.dr, 1.0), maxDr);
-    this.ds += as;
-    this.ds = Math.min(Math.max(this.ds, -maxDs), maxDs);
-    this.rotate += this.ds;
+
+  const deadEffectFrames = 4;
+  Ant.prototype.drawDead = function() {
+    this.draw();
+    this.draw(this.reverseImage);
+    return ++this.deadFrames >= deadEffectFrames;
   };
-  Ant.prototype.updateLocation = function() {
-    var theta = this.rotate + Math.PI * 0.5;
-    var x = this.dr * Math.cos(theta);
-    var y = this.dr * Math.sin(theta);
-    this.x += x;
-    this.y += y;
-    render.truncateCoords(this);
-  };
+
   return Ant;
 }]);
 
-app.factory('Anteater', ['Drawable', 'render', 'sound', function(Drawable, render, sound) {
+app.factory('Anteater', ['Drawable', 'Creature', 'render', 'sound', 'user', function(Drawable, Creature, render, sound, user) {
+  const alternateFrames = 30;
   var img1;
   var img2;
-  var Anteater = function(x, y, rotate) {
-    img1 = render.image('eater1');
-    img2 = render.image('eater2');
-    Drawable.call(this, x, y, rotate);
+  var Anteater = function(x, y, r) {
+    Creature.call(this, x, y, r, 40, 40, Math.PI);
+    this.flipVertical = true;
+    if (!img1) {
+      img1 = render.image('eater1');
+    }
+    if (!img2) {
+      img2 = render.image('eater2');
+    }
     this.image = img2;
-    this.imageWidth = 40;
-    this.imageHeight = 40;
+    this.alternateCount = 0;
+    this.draw = function() {
+      if (++this.alternateCount >= alternateFrames) {
+        this.alternateCount = 0;
+        this.image = this.image == img2 ? img1 : img2;
+      }
+      this.r = this.fmod(this.r, Math.PI * 2);
+      this.flipVertical = this.r < Math.PI * 0.5 || this.r > Math.PI * 1.5;
+      Anteater.prototype.draw.call(this, this.image);
+    };
   };
-  Anteater.prototype = new Drawable();
-  Anteater.prototype.swapImage = function() {
-    this.image = this.image == img2 ? img1 : img2;
-  };
+  Anteater.prototype = Object.create(Creature.prototype);
+  Object.defineProperties(Anteater.prototype, {
+    maxDr: {
+      get: function() { return user.eaterMove.value * 2; }
+    },
+    minDr: {
+      get: function() { return user.eaterMove.value; }
+    },
+  });
   return Anteater;
 }]);
 
 app.factory('CircleEffect', ['render', function(render) {
   const renderCountToStay = 6;
   var CircleEffect = function(x, y, r) {
-    this.renderCount = 0;
-    this.done = false;
     this.x = x;
     this.y = y;
     this.r = r;
+    this.renderCount = 0;
+    this.done = false;
   };
   CircleEffect.prototype.draw = function() {
     render.drawCircle(this.x, this.y, this.r);
