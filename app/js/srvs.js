@@ -199,7 +199,7 @@ app.factory('User', ['UserStatus', 'DiminishingUserStatus', 'sound', function(Us
     this.specialKill = new UserStatus(18.5, 1000, 1.5);
 
     this.eaterUpgrade = 0;
-    this.eaterMove = new UserStatus(10, 60, 2);
+    this.eaterMove = new UserStatus(1.5, 10, 0.4);
     this.eaterRadius = new UserStatus(60, 80, 1);
     this.eaterRate = new UserStatus(0.4, 1.0, 0.005, true);
     this.eaterEat = new UserStatus(3, 9, 0.2);
