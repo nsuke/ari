@@ -155,8 +155,8 @@ td {
 
 #volume {
   text-align: left;
-  margin-top: 20px;
-  margin-bottom: 20px;
+  margin-top: 11px;
+  margin-bottom: 11px;
 }
 
 #control-panel {
@@ -171,6 +171,10 @@ td {
 	padding:10px;
 	margin-right:10px;
   */
+}
+
+#slap-guage {
+  width: 180px;
 }
 
 #main {

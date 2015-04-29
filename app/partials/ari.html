@@ -64,8 +64,8 @@
         </button>
       </div>
 
-      <div>
-        <progress max="{{user.skillGaugeMax}}" value="{{user.skillGaugeValue}}"></progress>
+      <div class="control-panel-elem">
+        <progress id="slap-guage" max="{{user.skillGaugeMax}}" value="{{user.skillGaugeValue}}"></progress>
       </div>
       <div class="right-side-content" data-ng:mousedown="enableHand();" ng-show="user.skillAvailable">
         <p>Click to slap !</p>
